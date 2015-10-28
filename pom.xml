@@ -1,0 +1,18 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>no.uio.taco</groupId>
+  <artifactId>no.uio.taco.pukaMatControl</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>pukaMatControl</name>
+  <description>Modification to puka using matlabcontroll instead of JMatLink</description>
+  
+  <dependencies>
+  	<dependency>
+		<groupId>com.diffplug.matsim</groupId>
+ 		<artifactId>matconsolectl</artifactId>
+		<version>4.4.1</version>
+		</dependency>
+	</dependencies>
+  
+  
+</project>
