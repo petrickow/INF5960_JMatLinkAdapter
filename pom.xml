@@ -2,17 +2,73 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>no.uio.taco</groupId>
   <artifactId>no.uio.taco.pukaMatControl</artifactId>
+  
+  <packaging>jar</packaging>
+  
   <version>0.0.1-SNAPSHOT</version>
   <name>pukaMatControl</name>
   <description>Modification to puka using matlabcontroll instead of JMatLink</description>
-  
-  <dependencies>
-  	<dependency>
-		<groupId>com.diffplug.matsim</groupId>
- 		<artifactId>matconsolectl</artifactId>
-		<version>4.4.1</version>
+  	
+  	
+  	
+	<properties>
+		<jdk.version>1.8</jdk.version>
+		<junit.version>4.11</junit.version>
+	</properties>
+  	
+  	<dependencies>
+		<dependency>
+			<groupId>com.diffplug.matsim</groupId>
+ 			<artifactId>matconsolectl</artifactId>
+			<version>4.4.1</version>
 		</dependency>
 	</dependencies>
   
+  	<build>
+		<finalName>adaptedPuka</finalName>
+		<plugins>
+
+			<!-- download source code in Eclipse, best practice -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.9</version>
+				<configuration>
+					<downloadSources>true</downloadSources>
+					<downloadJavadocs>false</downloadJavadocs>
+				</configuration>
+			</plugin>
+
+			<!-- Set a JDK compiler level -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>${jdk.version}</source>
+					<target>${jdk.version}</target>
+				</configuration>
+			</plugin>
+
+			<!-- Make this jar executable -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+				  <!-- DO NOT include log4j.properties file in your Jar -->
+				  <excludes>
+					<exclude>**/log4j.properties</exclude>
+				  </excludes>
+				  <archive>
+					<manifest>
+						<!-- Jar file entry point -->
+						<mainClass>no.uio.taco.pukaMatControl.frmMain</mainClass>
+					</manifest>
+				  </archive>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
   
 </project>

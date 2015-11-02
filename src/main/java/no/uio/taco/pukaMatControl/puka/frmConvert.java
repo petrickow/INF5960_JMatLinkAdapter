@@ -31,7 +31,7 @@ public class frmConvert extends javax.swing.JFrame {
 		int intC = 0;
 
 		JMatLinkAdapter engMatLab = new JMatLinkAdapter();
-
+		engMatLab.engOpen();
 		/*engMatLab = new JMatLink();  //initiate connection
       		try {
        			System.load("JMatlink.dll");
