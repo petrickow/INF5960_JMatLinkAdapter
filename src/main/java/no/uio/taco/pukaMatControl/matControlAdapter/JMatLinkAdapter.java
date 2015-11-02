@@ -1,13 +1,13 @@
 package no.uio.taco.pukaMatControl.matControlAdapter;
 
 import java.awt.Image;
-
 import matlabcontrol.*;
+import matlabcontrol.extensions.*;
 
 public class JMatLinkAdapter implements IJMatLink {
 
 	MatlabProxyFactory factory;
-	MatlabProxy engMatLab;
+	MatlabProxy proxy;
 	
 	
 	/*** 
@@ -15,218 +15,243 @@ public class JMatLinkAdapter implements IJMatLink {
 	 * of a matlabProxy if no other connection exists
 	 */
 	public JMatLinkAdapter() {
+		//MatlabProxyFactoryOptions options = new MatlabProxyFactoryOptions(); 
+		factory = new MatlabProxyFactory(/*options*/);
 		
-		if (engMatLab == null) {
-			
-		}
-		else {
-			
-		}
+
 	}
 	
 	/**
 	 * New instance with existing connection
 	 * @param engMatLab - existing session
 	 */
-	public JMatLinkAdapter(MatlabProxy engMatLab) {
-		this.engMatLab = engMatLab; 
+	public JMatLinkAdapter(MatlabProxy proxy) {
+		this.proxy = proxy; 
 	}
 
 
 	public void engClose() {
 		// TODO Auto-generated method stub
-		
+		proxy.disconnect();
 	}
 
-
+	// Not used in puka, low priority
 	public void engClose(long epI) {
-		// TODO Auto-generated method stub
 		
+		proxy.disconnect();
 	}
 
-
+	// Not used in puka, low priority
 	public void engCloseAll() {
 		// TODO Auto-generated method stub
 		
 	}
 
-
+	// Not used in puka, low priority
 	public void engEvalString(long epI, String evalS) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 
 	public void engEvalString(String evalS) {
-		// TODO Auto-generated method stub
 		
+		try {
+			proxy.eval(evalS);
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block: Debuginformation if we crash
+			e.printStackTrace();
+		}
 	}
 
-
-	public void engEvalString() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
+	// Not used in puka, low priority
 	public double[][] engGetArray(long epI, String arrayS) {
-		// TODO Auto-generated method stub
+		
+		try {
+			Object o = proxy.getVariable(arrayS);
+			double[][] ret = (double[][]) o;
+			return ret;
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block: Debuginformation if we crash
+			e.printStackTrace();
+		}
 		return null;
 	}
 
 
 	public double[][] engGetArray(String arrayS) {
-		// TODO Auto-generated method stub
+		
+		try {
+			Object o = proxy.getVariable(arrayS);
+			double[][] ret = (double[][]) o;
+			return ret;
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block: Debuginformation if we crash
+			e.printStackTrace();
+		}
 		return null;
 	}
 
-
+	// Not used in puka, low priority
 	public String engGetCharArray(long epI, String arrayS) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-
+	// Not used in puka, low priority
 	public String engGetCharArray(String arrayS) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-
+	// Not used in puka, low priority
 	public Image engGetFigure(int figure, int dx, int dy) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-
+	// Not used in puka, low priority
 	public Image engGetFigure(long epI, int figure, int dx, int dy) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-
+	// Not used in puka, low priority
 	public String engGetOutputBuffer() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-
+	// Not used in puka, low priority
 	public String engGetOutputBuffer(long epI) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-
+	// Not used in puka, low priority
 	public double engGetScalar(long epI, String arrayS) {
-		// TODO Auto-generated method stub
+		try {
+			Object o = proxy.getVariable(arrayS);
+			double ret = (Double) o;
+			return ret;
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block: Debuginformation if we crash
+			e.printStackTrace();
+		}
 		return 0;
 	}
 
 
 	public double engGetScalar(String arrayS) {
-		// TODO Auto-generated method stub
+		try {
+			Object o = proxy.getVariable(arrayS);
+			double ret = (Double) o;
+			return ret;
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block: Debuginformation if we crash
+			e.printStackTrace();
+		}
 		return 0;
 	}
 
-
+	// Not used in puka, low priority
 	public boolean engGetVisible(long epI) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 
 	public void engOpen() {
-		// TODO Auto-generated method stub
-		
+		try {
+			proxy = factory.getProxy();
+		} catch (MatlabConnectionException e) {
+			// TODO: Debug information
+			e.printStackTrace();
+			System.exit(0);
+		}
 	}
 
-
+	// Not used in puka, low priority
 	public void engOpen(String startCmds) {
-		// TODO Auto-generated method stub
 		
 	}
 
-
+	// Not used in puka, low priority
 	public long engOpenSingleUse() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
-
+	// Not used in puka, low priority
 	public long engOpenSingleUse(String startCmds) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
-
+	// Not used in puka, low priority
 	public int engOutputBuffer() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
-
+	// Not used in puka, low priority
 	public int engOutputBuffer(long epI) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
-
+	// Not used in puka, low priority
 	public int engOutputBuffer(long epI, int buflenI) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
-
+	// Not used in puka, low priority
 	public void engPutArray(long epI, String arrayS, double valueD) {
-		// TODO Auto-generated method stub
 		
 	}
 
-
+	// Not used in puka, low priority
 	public void engPutArray(long epI, String arrayS, double[] valueD) {
-		// TODO Auto-generated method stub
 		
 	}
 
-
+	// Not used in puka, low priority
 	public void engPutArray(long epI, String arrayS, double[][] valueDD) {
-		// TODO Auto-generated method stub
 		
 	}
 
 
 	public void engPutArray(String arrayS, double valueD) {
-		// TODO Auto-generated method stub
+		
+		try {
+			proxy.setVariable(arrayS, valueD);
+		} catch (MatlabInvocationException e) {
+			e.printStackTrace();
+		}
+		
 		
 	}
 
 
 	public void engPutArray(String arrayS, double[] valueD) {
-		// TODO Auto-generated method stub
+		try {
+			proxy.setVariable(arrayS, valueD);
+		} catch (MatlabInvocationException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
 
 	public void engPutArray(String arrayS, double[][] valueDD) {
-		// TODO Auto-generated method stub
+		try {
+			proxy.setVariable(arrayS, valueDD);
+		} catch (MatlabInvocationException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
-
+	// Not used in puka, low priority
 	public void engPutArray(String arrayS, int valueI) {
-		// TODO Auto-generated method stub
 		
 	}
 
-
+	// Not used in puka, low priority
 	public void engSetVisible(long epI, boolean visB) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
-
+	// Not used in puka, low priority
 	public String getVersion() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -239,7 +264,6 @@ public class JMatLinkAdapter implements IJMatLink {
 
 	public void setDebug(boolean debugB) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	

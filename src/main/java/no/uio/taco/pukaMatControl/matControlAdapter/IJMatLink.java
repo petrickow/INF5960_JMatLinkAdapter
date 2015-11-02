@@ -11,7 +11,7 @@ public interface IJMatLink {
 
 	public void engEvalString(long epI, String evalS);
 	public void engEvalString(String evalS);
-	public void engEvalString();
+	
 	public double[][] engGetArray(long epI, String arrayS);
 	public double[][] engGetArray(String arrayS);
 	public String engGetCharArray(long epI, String arrayS);
