@@ -2,7 +2,6 @@ package no.uio.taco.pukaMatControl.matControlAdapter;
 
 import java.awt.Image;
 import matlabcontrol.*;
-import matlabcontrol.extensions.*;
 
 public class JMatLinkAdapter implements IJMatLink {
 
@@ -15,10 +14,12 @@ public class JMatLinkAdapter implements IJMatLink {
 	 * of a matlabProxy if no other connection exists
 	 */
 	public JMatLinkAdapter() {
-		//MatlabProxyFactoryOptions options = new MatlabProxyFactoryOptions(); 
-		factory = new MatlabProxyFactory(/*options*/);
-		
-
+		MatlabProxyFactoryOptions options;
+        options = new MatlabProxyFactoryOptions.Builder()
+                .setHidden(true) // just the command window
+                .build();
+        
+		factory = new MatlabProxyFactory(options);
 	}
 	
 	/**
@@ -30,14 +31,13 @@ public class JMatLinkAdapter implements IJMatLink {
 	}
 
 
+	
 	public void engClose() {
-		// TODO Auto-generated method stub
-		proxy.disconnect();
+		proxy.disconnect(); // or proxy.exit()? 
 	}
 
 	// Not used in puka, low priority
 	public void engClose(long epI) {
-		
 		proxy.disconnect();
 	}
 
@@ -257,8 +257,11 @@ public class JMatLinkAdapter implements IJMatLink {
 
 
 	public void kill() {
-		// TODO Auto-generated method stub
-		
+		/*From javadoc: 
+		kill
+
+		public void kill()
+		obsolete method*/
 	}
 
 

@@ -235,7 +235,7 @@ public class frmMain extends javax.swing.JFrame {
 	public static void main(String args[]) {
 
 		try {
-	  UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
 			System.out.println("Couldn't use the native look and feel "); e.printStackTrace();
 		}

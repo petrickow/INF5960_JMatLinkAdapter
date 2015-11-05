@@ -21,6 +21,7 @@
 			<groupId>com.diffplug.matsim</groupId>
  			<artifactId>matconsolectl</artifactId>
 			<version>4.4.1</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
   
@@ -54,17 +55,14 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-				  <!-- DO NOT include log4j.properties file in your Jar -->
-				  <excludes>
-					<exclude>**/log4j.properties</exclude>
-				  </excludes>
-				  <archive>
-					<manifest>
-						<!-- Jar file entry point -->
-						<mainClass>no.uio.taco.pukaMatControl.frmMain</mainClass>
-					</manifest>
-				  </archive>
+				<configuration>				  
+				  	<archive>
+						<manifest>
+							<!-- Jar file entry point -->
+							<mainClass>no.uio.taco.pukaMatControl.puka.frmMain</mainClass>
+
+						</manifest>
+				  	</archive>
 				</configuration>
 			</plugin>
 
