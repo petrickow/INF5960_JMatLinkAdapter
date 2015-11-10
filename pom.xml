@@ -26,7 +26,7 @@
 	</dependencies>
   
   	<build>
-		<finalName>adaptedPuka</finalName>
+		<finalName>puka</finalName>
 		<plugins>
 
 			<!-- download source code in Eclipse, best practice -->
