@@ -1,7 +1,7 @@
-WFDBDirectory|C:\cygwin64\home\admin\wfdb-10.5.23\app
-InstallPath|C:\Users\admin\Documents\puka\puka
+WFDBDirectory|C:\cygwin64\home\admin\wfdb-10.5.23\app\
+InstallPath|C:\Users\admin\workspace\no.uio.taco.pukaMatControl\target\
 WFDBDataPath|c:\temp\
-ConvertECGPath|C:\cygwin64\home\admin\wfdb-10.5.23
+ConvertECGPath|C:\Users\admin\workspace\no.uio.taco.pukaMatControl\target\
 SampleFreq|1000
 SignalUnits|mV
 SignalGain|5000
@@ -34,9 +34,7 @@ ClipLength|74000
 ClipLength|124000
 ColEKG|1
 ColRespiration|2
-ColSCR|3
-ColDial|4
 ColTrigger|5
-dbname|newTest
-dbname|subjectData
 dbname|EduardoMovies
+dbname|subjectData
+dbname|newTest

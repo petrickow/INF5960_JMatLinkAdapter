@@ -13,6 +13,11 @@ http://www.physionet.org/physiotools/wpg/wpg.pdf
 
 https://www.physionet.org/physiotools/ecgpuwave/
 
-
-
 https://www.physionet.org/physiotools/puka/
+
+TODO List:
+Make it so that errors in preferences does not result in the
+deletion of the preferences file!
+
+Now that we have preferences, try adding valid clips. Reformat
+the samples file so that we have a valid clip.
