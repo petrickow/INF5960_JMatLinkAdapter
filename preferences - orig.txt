@@ -1,0 +1,42 @@
+WFDBDirectory|C:/cygwin/home/wfdb-10.3.13/app/
+InstallPath|c:\kailua\puka\
+WFDBDataPath|c:\temp\
+ConvertECGPath|C:/cygwin/home/wfdb-10.3.13/
+SampleFreq|1000
+SignalUnits|mV
+SignalGain|5000
+ADCResolution|16
+ADCZero|0
+Length|0:5:0
+ClipName|Happy1: 2 min 18 sec
+ClipName|Fear2: 1 min 41 sec
+ClipName|Happy3: 2 min 2 sec
+ClipName|Fear4: 2 min 10 sec
+ClipName|Sad5: 1 min 39 sec
+ClipName|Happy6: 2 min 20 sec
+ClipName|Sad7: 2 min 20 sec
+ClipName|Sad8: 2 min 29 sec
+ClipName|Fear9: 1 min 40 sec
+ClipName|Happy10: 2 min 42 sec
+ClipName|Sad11: 1 min 14 sec
+ClipName|Fear12: 2 min 4 sec
+ClipLength|138000
+ClipLength|101000
+ClipLength|122000
+ClipLength|130000
+ClipLength|99000
+ClipLength|140000
+ClipLength|140000
+ClipLength|149000
+ClipLength|100000
+ClipLength|162000
+ClipLength|74000
+ClipLength|124000
+ColEKG|1
+ColRespiration|2
+ColSCR|3
+ColDial|4
+ColTrigger|5
+dbname|newTest
+dbname|subjectData
+dbname|EduardoMovies

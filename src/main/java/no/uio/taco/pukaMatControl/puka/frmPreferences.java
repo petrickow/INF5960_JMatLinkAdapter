@@ -949,9 +949,10 @@ public class frmPreferences extends javax.swing.JInternalFrame {
 		//reads the preference file to set paths to the correct directories
 		File filePref; String strInput = ""; String strToken = ""; StringTokenizer jcTokenizer;
 		Iterator jcIterator;
-				
-		filePref = new File("preferences.txt");  
-		if (filePref.isFile() == false) { JOptionPane.showMessageDialog(null, "Puka can't find the preference file.", "Error", JOptionPane.ERROR_MESSAGE); System.exit(1); }
+
+		filePref = new File("preferences.txt");
+		System.out.println("Working Directory = " +	 System.getProperty("user.dir"));
+		if (filePref.isFile() == false) { System.out.println("No pref"); JOptionPane.showMessageDialog(null, "Puka can't find the preference file.", "Error", JOptionPane.ERROR_MESSAGE); System.exit(1); }
 		
 		try {  
 			FileReader jcFReader = new FileReader(filePref);  //reader to connect to the file

@@ -1,8 +1,8 @@
-WFDBDirectory|C:\cygwin64\home\admin\wfdb-10.5.23\app\
-InstallPath|C:\Users\admin\workspace\no.uio.taco.pukaMatControl\target\
+WFDBDirectory|C:\cygwin64\home\admin\wfdb-10.5.23\app
+InstallPath|C:\Users\admin\Documents\puka\puka
 WFDBDataPath|c:\temp\
-ConvertECGPath|C:\cygwin64\home\admin\wfdb-10.5.23\
-SampleFreq|100
+ConvertECGPath|C:\cygwin64\home\admin\wfdb-10.5.23
+SampleFreq|1000
 SignalUnits|mV
 SignalGain|5000
 ADCResolution|16
