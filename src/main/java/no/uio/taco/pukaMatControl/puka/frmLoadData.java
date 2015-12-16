@@ -435,7 +435,7 @@ public class frmLoadData extends javax.swing.JInternalFrame implements javax.swi
 				engMatLab.engEvalString("clear;");  //remove all previous information in workspace, if any
 				engMatLab.engEvalString("data1 = load('" + jcFile.getPath() + "');");  //load data file
 				engMatLab.engEvalString("y = data1(:, " + frmPreferences.getColTrigger() + ");");  //get trigger col into y in matlab
-				engMatLab.engEvalString("cd ('" + frmPreferences.getInstallPath() + "\\matlabScripts')");
+				engMatLab.engEvalString("cd ('" + frmPreferences.getInstallPath() + "matlabScripts')");
 				engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
 				dblTemp = frmLoadData.engMatLab.engGetScalar("onsetTime");  //get the stimulus onset time point
 

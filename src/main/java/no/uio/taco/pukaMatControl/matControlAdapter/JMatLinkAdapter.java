@@ -1,6 +1,7 @@
 package no.uio.taco.pukaMatControl.matControlAdapter;
 
 import java.awt.Image;
+import matlabcontrol.extensions.MatlabTypeConverter;
 import matlabcontrol.*;
 
 public class JMatLinkAdapter implements IJMatLink {
@@ -124,9 +125,7 @@ public class JMatLinkAdapter implements IJMatLink {
 	// Not used in puka, low priority
 	public double engGetScalar(long epI, String arrayS) {
 		try {
-			Object o = proxy.getVariable(arrayS);
-			double ret = (Double) o;
-			return ret;
+			return ((double[]) proxy.getVariable(arrayS))[0];
 		} catch (MatlabInvocationException e) {
 			// TODO Auto-generated catch block: Debuginformation if we crash
 			e.printStackTrace();
@@ -137,9 +136,9 @@ public class JMatLinkAdapter implements IJMatLink {
 
 	public double engGetScalar(String arrayS) {
 		try {
-			Object o = proxy.getVariable(arrayS);
-			double ret = (Double) o;
-			return ret;
+		
+			double ret = ((double[]) proxy.getVariable(arrayS))[0];
+			return (double) ret;
 		} catch (MatlabInvocationException e) {
 			// TODO Auto-generated catch block: Debuginformation if we crash
 			e.printStackTrace();
