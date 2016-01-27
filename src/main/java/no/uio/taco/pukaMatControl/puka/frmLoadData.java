@@ -294,7 +294,7 @@ public class frmLoadData extends javax.swing.JInternalFrame implements javax.swi
 		//assign the value in txtOnset to be the start time for the clip
 		double dblTemp = 0; int intTime = 0; Integer IntTemp; String strClipName = ""; double dblTotalTime = 0;
 
-		engMatLab.engEvalString("size = max(size(data1));");
+		engMatLab.engEvalString("size = max(size(data1));"); // this causes fault... size not created, how about n = size(data1); size = max(n); seems to work...
 		dblTemp = frmLoadData.engMatLab.engGetScalar("size");
 		dblTemp = dblTemp - 1;
 		IntTemp = new Integer(txtOnset.getText());

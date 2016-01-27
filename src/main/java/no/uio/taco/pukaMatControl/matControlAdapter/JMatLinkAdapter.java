@@ -135,8 +135,7 @@ public class JMatLinkAdapter implements IJMatLink {
 
 
 	public double engGetScalar(String arrayS) {
-		try {
-		
+		try {		
 			double ret = ((double[]) proxy.getVariable(arrayS))[0];
 			return (double) ret;
 		} catch (MatlabInvocationException e) {
@@ -258,7 +257,6 @@ public class JMatLinkAdapter implements IJMatLink {
 	public void kill() {
 		/*From javadoc: 
 		kill
-
 		public void kill()
 		obsolete method*/
 	}

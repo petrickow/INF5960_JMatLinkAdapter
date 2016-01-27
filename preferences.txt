@@ -4,7 +4,7 @@ WFDBDataPath|c:\temp\
 ConvertECGPath|C:\Users\admin\workspace\no.uio.taco.pukaMatControl\target\
 SampleFreq|100
 SignalUnits|mV
-SignalGain|5000
+SignalGain|2000
 ADCResolution|16
 ADCZero|0
 Length|0:10:12
@@ -13,6 +13,6 @@ ClipLength|61248
 ColEKG|-1
 ColRespiration|1
 ColTrigger|1
-dbname|EduardoMovies
-dbname|subjectData
 dbname|newTest
+dbname|subjectData
+dbname|EduardoMovies
