@@ -1,0 +1,22 @@
+NOTATER.txt
+
+Trivial test:
+http://uk.mathworks.com/matlabcentral/fileexchange/37376-oscillator-and-signal-generator
+wave = oscillator('Sinusoid', 10, 0.5, 0, 0, 100);
+Gir 10 sekunder (a 100hz) kan brukes for peakdetection testing
+
+
+
+Moderate test:
+Generere mer komplekse signaler? 
+Neste steg, finne data som kan testes med i physionet?
+
+
+Realworld test:
+Komplett data sett
+	- normalisering?
+	- puka bruker 0-verdi i signaler for å detektere onset av respirasjon...
+
+
+Modifikasjoner:
+Bryte signalet inn i mindre deler for "online" analytiske evner for bruk i TRIO'
