@@ -3,6 +3,7 @@ package no.uio.taco.pukaMatControl.matControlAdapter;
 import java.awt.Image;
 import matlabcontrol.extensions.MatlabTypeConverter;
 import matlabcontrol.*;
+import matlabcontrol.extensions.MatlabNumericArray;
 
 public class JMatLinkAdapter implements IJMatLink {
 
@@ -31,12 +32,118 @@ public class JMatLinkAdapter implements IJMatLink {
 		this.proxy = proxy; 
 	}
 
-
-	
+	/**
+	 * Disconnects and shuts down the matlab instance
+	 */
 	public void engClose() {
 		proxy.disconnect(); // or proxy.exit()? 
 	}
 
+	/**
+	 *  Uses MatlabProxyFactory created in constructor to get
+	 *  an instance of a proxy to be used to communicate with matlab
+	 *  @return Proxy object from MatlabProxyFactory 
+	 */
+	public void engOpen() {
+		try {
+			proxy = factory.getProxy();
+		} catch (MatlabConnectionException e) {
+			// TODO: Debug information
+			e.printStackTrace();
+			System.exit(0);
+		}
+	}
+	
+	
+	/**
+	 * Passes instructions to MatLab using proxy.
+	 * @param A string with the expression you wish to evaluate using matlab
+	 */
+	public void engEvalString(String evalS) {
+		
+		try {
+			proxy.eval(evalS);
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block: Debuginformation if we crash
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Get a variable from matlab workspace.
+	 */
+	public double engGetScalar(String arrayS) {
+		try {		
+			double ret = ((double[]) proxy.getVariable(arrayS))[0];
+			return (double) ret;
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block: Debuginformation if we crash
+			e.printStackTrace();
+		}
+		return 0;
+	}	
+	
+	/**
+	 * 
+	 */
+	public double[][] engGetArray(String arrayS) {
+		
+		MatlabTypeConverter processor = new MatlabTypeConverter(proxy);
+		/*
+		 * 
+		 */
+		try {
+			MatlabNumericArray array = processor.getNumericArray(arrayS);
+			double[][] javaArray = array.getRealArray2D();
+			//Object o = proxy.getVariable(arrayS);
+			//double[][] ret = ((double[]) proxy.getVariable(arrayS))[0];
+			
+			
+			return javaArray;
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block: Debuginformation if we crash
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+	
+	
+	/* *********ENGPUTARRAY*********************************/
+	public void engPutArray(String arrayS, double valueD) {
+		
+		try {
+			proxy.setVariable(arrayS, valueD);
+		} catch (MatlabInvocationException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+
+	public void engPutArray(String arrayS, double[] valueD) {
+		try {
+			proxy.setVariable(arrayS, valueD);
+		} catch (MatlabInvocationException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	public void engPutArray(String arrayS, double[][] valueDD) {
+		try {
+			proxy.setVariable(arrayS, valueDD);
+		} catch (MatlabInvocationException e) {
+			e.printStackTrace();
+		}
+	}	
+	/* *****************************************************/
+	
+//*****************************************************************//
+//	NOT IN USE - will not be prioritized
+//*****************************************************************//	
+	
 	// Not used in puka, low priority
 	public void engClose(long epI) {
 		proxy.disconnect();
@@ -53,33 +160,8 @@ public class JMatLinkAdapter implements IJMatLink {
 
 	}
 
-
-	public void engEvalString(String evalS) {
-		
-		try {
-			proxy.eval(evalS);
-		} catch (MatlabInvocationException e) {
-			// TODO Auto-generated catch block: Debuginformation if we crash
-			e.printStackTrace();
-		}
-	}
-
 	// Not used in puka, low priority
 	public double[][] engGetArray(long epI, String arrayS) {
-		
-		try {
-			Object o = proxy.getVariable(arrayS);
-			double[][] ret = (double[][]) o;
-			return ret;
-		} catch (MatlabInvocationException e) {
-			// TODO Auto-generated catch block: Debuginformation if we crash
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-
-	public double[][] engGetArray(String arrayS) {
 		
 		try {
 			Object o = proxy.getVariable(arrayS);
@@ -133,32 +215,9 @@ public class JMatLinkAdapter implements IJMatLink {
 		return 0;
 	}
 
-
-	public double engGetScalar(String arrayS) {
-		try {		
-			double ret = ((double[]) proxy.getVariable(arrayS))[0];
-			return (double) ret;
-		} catch (MatlabInvocationException e) {
-			// TODO Auto-generated catch block: Debuginformation if we crash
-			e.printStackTrace();
-		}
-		return 0;
-	}
-
 	// Not used in puka, low priority
 	public boolean engGetVisible(long epI) {
 		return false;
-	}
-
-
-	public void engOpen() {
-		try {
-			proxy = factory.getProxy();
-		} catch (MatlabConnectionException e) {
-			// TODO: Debug information
-			e.printStackTrace();
-			System.exit(0);
-		}
 	}
 
 	// Not used in puka, low priority
@@ -206,38 +265,6 @@ public class JMatLinkAdapter implements IJMatLink {
 		
 	}
 
-
-	public void engPutArray(String arrayS, double valueD) {
-		
-		try {
-			proxy.setVariable(arrayS, valueD);
-		} catch (MatlabInvocationException e) {
-			e.printStackTrace();
-		}
-		
-		
-	}
-
-
-	public void engPutArray(String arrayS, double[] valueD) {
-		try {
-			proxy.setVariable(arrayS, valueD);
-		} catch (MatlabInvocationException e) {
-			e.printStackTrace();
-		}
-		
-	}
-
-
-	public void engPutArray(String arrayS, double[][] valueDD) {
-		try {
-			proxy.setVariable(arrayS, valueDD);
-		} catch (MatlabInvocationException e) {
-			e.printStackTrace();
-		}
-		
-	}
-
 	// Not used in puka, low priority
 	public void engPutArray(String arrayS, int valueI) {
 		
@@ -252,7 +279,6 @@ public class JMatLinkAdapter implements IJMatLink {
 	public String getVersion() {
 		return null;
 	}
-
 
 	public void kill() {
 		/*From javadoc: 
