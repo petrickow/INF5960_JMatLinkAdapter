@@ -88,18 +88,24 @@ public class JMatLinkAdapter implements IJMatLink {
 	 */
 	public double[][] engGetArray(String arrayS) {
 		
-		MatlabTypeConverter processor = new MatlabTypeConverter(proxy);
+		//MatlabTypeConverter processor = new MatlabTypeConverter(proxy);
+		
 		/*
+		 * Hvorfor får vi matlab exception her?
 		 * 
+		 * Hvordan fungerte puka når denne tydeligvis ikke fungerte?
+		 * 
+		 * Sjekke matlabcontrol javadoc og walkthrough + test debug i puka når vi leser respirasjonsdata
 		 */
 		try {
-			MatlabNumericArray array = processor.getNumericArray(arrayS);
-			double[][] javaArray = array.getRealArray2D();
-			//Object o = proxy.getVariable(arrayS);
-			//double[][] ret = ((double[]) proxy.getVariable(arrayS))[0];
+			//MatlabNumericArray array = processor.getNumericArray(arrayS);
+			//double[][] javaArray = array.getRealArray2D();
+			Object o = proxy.getVariable(arrayS);
+			double[][] ret = ((double[][]) proxy.getVariable(arrayS));
 			
 			
-			return javaArray;
+			
+			return ret;
 		} catch (MatlabInvocationException e) {
 			// TODO Auto-generated catch block: Debuginformation if we crash
 			e.printStackTrace();

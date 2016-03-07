@@ -28,7 +28,8 @@ public class AdapterTests {
 	@AfterClass
 	public static void tearDown() {
 		engMatLab.engEvalString("clear");
-		engMatLab.engClose();
+		engMatLab.kill();
+		System.out.println("Done and done"); // change to logger?
 	}
 	
 	
@@ -59,12 +60,34 @@ public class AdapterTests {
 	
 	@Test
 	public void SettingAndGettingArrays() {
+		
 		double[][] array = {{1.0, 1.0, 1.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0, 1.0}};
+		
+		// put array creates a cell array
 		engMatLab.engPutArray("array", array);
 		
+		//Change put array to convert into matlab type
 		double[][] res = engMatLab.engGetArray("array");
-		//assertArrayEquals(array, res);
-		assertTrue(true);
+
 		
+
+		assertArrayEquals(array, res); // we want the array to be identical when it is returned.
+		
+	}
+	
+	/**
+	 * Do some simple math to the array to make sure matlab reads the array correctly
+	 */
+	@Test
+	public void OperationsOnArraysAreCorrect() {
+		double[][] array = {{1.0}, {1.0}};
+		engMatLab.engPutArray("array", array);
+		
+		engMatLab.engEvalString("array*2");
+		
+		double[][] res = engMatLab.engGetArray("array");
+		
+		assertTrue(array[0][0]*2 == res[0][0]);
+		assertTrue(array[1][0]*2 == res[1][0]);
 	}
 }
