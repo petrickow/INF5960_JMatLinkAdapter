@@ -517,7 +517,8 @@ public class frmRespiration extends javax.swing.JInternalFrame {
 		
 		jcTempList= new ArrayList();
 		dblNewT = frmLoadData.engMatLab.engGetArray("newT");
-		for (intC = 0; intC < dblNewT[0].length; intC++) { jcTempList.add(new Integer((int)dblNewT[0][intC])); }
+		for (intC = 0; intC < dblNewT[0].length; intC++) {
+			jcTempList.add(new Integer((int) dblNewT[0][intC])); }
 		rmData.setTroughPauseList(jcTempList); 
 	}//GEN-LAST:event_cmdNextActionPerformed
 

@@ -7,6 +7,7 @@ import matlabcontrol.extensions.MatlabNumericArray;
 
 public class JMatLinkAdapter implements IJMatLink {
 
+	MatlabTypeConverter converter;
 	MatlabProxyFactory factory;
 	MatlabProxy proxy;
 	
@@ -29,7 +30,7 @@ public class JMatLinkAdapter implements IJMatLink {
 	 * @param engMatLab - existing session
 	 */
 	public JMatLinkAdapter(MatlabProxy proxy) {
-		this.proxy = proxy; 
+		this.proxy = proxy;
 	}
 
 	/**
@@ -47,6 +48,7 @@ public class JMatLinkAdapter implements IJMatLink {
 	public void engOpen() {
 		try {
 			proxy = factory.getProxy();
+			converter = new MatlabTypeConverter(proxy);
 		} catch (MatlabConnectionException e) {
 			// TODO: Debug information
 			e.printStackTrace();
@@ -88,7 +90,7 @@ public class JMatLinkAdapter implements IJMatLink {
 	 */
 	public double[][] engGetArray(String arrayS) {
 		
-		//MatlabTypeConverter processor = new MatlabTypeConverter(proxy);
+		//
 		
 		/*
 		 * Hvorfor får vi matlab exception her?
@@ -98,14 +100,14 @@ public class JMatLinkAdapter implements IJMatLink {
 		 * Sjekke matlabcontrol javadoc og walkthrough + test debug i puka når vi leser respirasjonsdata
 		 */
 		try {
-			//MatlabNumericArray array = processor.getNumericArray(arrayS);
-			//double[][] javaArray = array.getRealArray2D();
-			Object o = proxy.getVariable(arrayS);
-			double[][] ret = ((double[][]) proxy.getVariable(arrayS));
+			MatlabNumericArray array = converter.getNumericArray(arrayS);
+			System.out.println(array.toString());
+			double[][] javaArray = array.getRealArray2D();
+			//Object o = proxy.getVariable(arrayS);
+			//double[][] ret = ((double[][]) proxy.getVariable(arrayS));
+					
+			return javaArray;
 			
-			
-			
-			return ret;
 		} catch (MatlabInvocationException e) {
 			// TODO Auto-generated catch block: Debuginformation if we crash
 			e.printStackTrace();
@@ -117,10 +119,14 @@ public class JMatLinkAdapter implements IJMatLink {
 	
 	
 	/* *********ENGPUTARRAY*********************************/
+	/**
+	 * Pro-guess, create an array with one element
+	 */
+	
 	public void engPutArray(String arrayS, double valueD) {
 		
 		try {
-			proxy.setVariable(arrayS, valueD);
+			proxy.setVariable(arrayS, valueD); 
 		} catch (MatlabInvocationException e) {
 			e.printStackTrace();
 		}
@@ -139,7 +145,11 @@ public class JMatLinkAdapter implements IJMatLink {
 
 	public void engPutArray(String arrayS, double[][] valueDD) {
 		try {
-			proxy.setVariable(arrayS, valueDD);
+			//Create matlab variable
+			MatlabNumericArray mlArray = new MatlabNumericArray(valueDD, null);
+			
+			converter.setNumericArray(arrayS, mlArray);
+			//proxy.setVariable(arrayS, valueDD);
 		} catch (MatlabInvocationException e) {
 			e.printStackTrace();
 		}
