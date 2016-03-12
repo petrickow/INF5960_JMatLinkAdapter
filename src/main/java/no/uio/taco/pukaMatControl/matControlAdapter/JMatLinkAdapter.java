@@ -2,15 +2,20 @@ package no.uio.taco.pukaMatControl.matControlAdapter;
 
 import java.awt.Image;
 import matlabcontrol.extensions.MatlabTypeConverter;
-import matlabcontrol.*;
 import matlabcontrol.extensions.MatlabNumericArray;
+import matlabcontrol.*;
 
 public class JMatLinkAdapter implements IJMatLink {
 
 	MatlabTypeConverter converter;
 	MatlabProxyFactory factory;
-	MatlabProxy proxy;
 	
+	MatlabProxy proxy;
+	MatlabProxy bck;
+	
+	LoggingMatlabProxy logProxy;
+	
+	Boolean debug;
 	
 	/*** 
 	 * Constructor does not take arguments, sets up a new instance
@@ -23,14 +28,6 @@ public class JMatLinkAdapter implements IJMatLink {
                 .build();
         
 		factory = new MatlabProxyFactory(options);
-	}
-	
-	/**
-	 * New instance with existing connection
-	 * @param engMatLab - existing session
-	 */
-	public JMatLinkAdapter(MatlabProxy proxy) {
-		this.proxy = proxy;
 	}
 
 	/**
@@ -48,7 +45,11 @@ public class JMatLinkAdapter implements IJMatLink {
 	public void engOpen() {
 		try {
 			proxy = factory.getProxy();
+			bck = proxy;
+			//helpers
 			converter = new MatlabTypeConverter(proxy);
+			logProxy = new LoggingMatlabProxy(proxy); // for debug
+			
 		} catch (MatlabConnectionException e) {
 			// TODO: Debug information
 			e.printStackTrace();
@@ -87,15 +88,12 @@ public class JMatLinkAdapter implements IJMatLink {
 	
 	/**
 	 * Retrieves a matlab-typed array and converts it to a two dimensional Java array.
-	 * 
 	 */
 	public double[][] engGetArray(String arrayS) {
 		
 		try {
 			MatlabNumericArray array = converter.getNumericArray(arrayS); // get numberic array
-			
 			double[][] javaArray = array.getRealArray2D(); // convert to java native type
-								
 			return javaArray;
 			
 		} catch (MatlabInvocationException e) {
@@ -111,7 +109,6 @@ public class JMatLinkAdapter implements IJMatLink {
 	 */
 	
 	public void engPutArray(String arrayS, double valueD) {
-		
 		try {
 			proxy.setVariable(arrayS, valueD); 
 		} catch (MatlabInvocationException e) {
@@ -126,11 +123,13 @@ public class JMatLinkAdapter implements IJMatLink {
 			e.printStackTrace();
 		}
 	}
-
+	
 	public void engPutArray(String arrayS, double[][] valueDD) {
 		try {
-			//Create matlab variable
-			MatlabNumericArray mlArray = new MatlabNumericArray(valueDD, null);
+			MatlabNumericArray mlArray = new MatlabNumericArray(valueDD, null); //Create matlab variable based on Java 2d array
+			/* Matlab does not allow jagged arrays, convert to number array 
+			 * to be sure that the array is ok with matlab 
+			 */
 			converter.setNumericArray(arrayS, mlArray);
 		} catch (MatlabInvocationException e) {
 			e.printStackTrace();
@@ -139,8 +138,15 @@ public class JMatLinkAdapter implements IJMatLink {
 	/* *****************************************************/
 	
 //*****************************************************************//
-//	NOT IN USE - will not be prioritized
+//	NOT IN USE IN PUKA - will not be prioritized
 //*****************************************************************//	
+	/**
+	 * New instance with existing connection
+	 * @param engMatLab - existing session
+	 */
+	public JMatLinkAdapter(MatlabProxy proxy) {
+		this.proxy = proxy;
+	}
 	
 	// Not used in puka, low priority
 	public void engClose(long epI) {
@@ -161,14 +167,6 @@ public class JMatLinkAdapter implements IJMatLink {
 	// Not used in puka, low priority
 	public double[][] engGetArray(long epI, String arrayS) {
 		
-		try {
-			Object o = proxy.getVariable(arrayS);
-			double[][] ret = (double[][]) o;
-			return ret;
-		} catch (MatlabInvocationException e) {
-			// TODO Auto-generated catch block: Debuginformation if we crash
-			e.printStackTrace();
-		}
 		return null;
 	}
 
@@ -204,12 +202,6 @@ public class JMatLinkAdapter implements IJMatLink {
 
 	// Not used in puka, low priority
 	public double engGetScalar(long epI, String arrayS) {
-		try {
-			return ((double[]) proxy.getVariable(arrayS))[0];
-		} catch (MatlabInvocationException e) {
-			// TODO Auto-generated catch block: Debuginformation if we crash
-			e.printStackTrace();
-		}
 		return 0;
 	}
 
@@ -279,15 +271,33 @@ public class JMatLinkAdapter implements IJMatLink {
 	}
 
 	public void kill() {
-		/*From javadoc: 
-		kill
-		public void kill()
-		obsolete method*/
+		// spin-wait, this has not been tested properly
+		// no asynch calls to matlab
+		while (proxy.isRunningInsideMatlab()) {
+			try {
+				wait(200);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		try {
+			proxy.exit();
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 	}
 
-
 	public void setDebug(boolean debugB) {
-		// TODO Auto-generated method stub
+		if (debugB) {
+			LoggingMatlabProxy.showInConsoleHandler();
+			proxy = logProxy;
+		}
+		else
+			proxy = bck;
+		debug = debugB;
 	}
 
 	

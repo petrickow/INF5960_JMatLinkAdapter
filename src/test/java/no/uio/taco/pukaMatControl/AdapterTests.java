@@ -3,16 +3,9 @@ package no.uio.taco.pukaMatControl;
 import no.uio.taco.pukaMatControl.matControlAdapter.*;
 
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import junit.framework.Assert;
-
-import java.lang.*;
-
 
 public class AdapterTests {
 
@@ -24,7 +17,7 @@ public class AdapterTests {
 		System.out.println("Please wait while matlab is instansiated ... ");
 		engMatLab = new JMatLinkAdapter();  //initiate connection
 		engMatLab.engOpen();
-		
+		engMatLab.setDebug(true); // to test debug logger class from matlabcontrol
 	}
 		
 	@AfterClass
@@ -33,7 +26,6 @@ public class AdapterTests {
 		engMatLab.kill();
 		System.out.println("Done and done"); // change to logger?
 	}
-	
 	
 	/**
 	 * This test makes sure the adapter has been instanciated
@@ -53,7 +45,6 @@ public class AdapterTests {
 		engMatLab.engEvalString("variable = "+ dbl + ";");
 		double res = engMatLab.engGetScalar("variable");
 		assertEquals("The value of engGetScalar is the same as provided", dbl, res, 0.0);
-		
 	}
 	
 	/**
@@ -144,5 +135,17 @@ public class AdapterTests {
 				
 		assertTrue(array[0][0]*2 == res[0][0]);
 		assertTrue(array[1][0]*2 == res[1][0]);
+	}
+
+	/**
+	 * This has to be confimed manually at the moment...
+	 */
+	@Test
+	public void DisableAndEnableLogger() {
+		engMatLab.setDebug(false);
+		engMatLab.engEvalString("not_printed = 1.0"); // find a way to capture stdout?
+		engMatLab.setDebug(true);
+		engMatLab.engEvalString("printed = 1.0");
+		assertTrue(true);
 	}
 }
