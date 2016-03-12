@@ -98,7 +98,6 @@ public class AdapterTests {
 		
 		// put array creates a cell array
 		engMatLab.engPutArray("array", array);
-		
 		//Change put array to convert into matlab type
 		double[][] res = engMatLab.engGetArray("array");
 		
@@ -117,7 +116,7 @@ public class AdapterTests {
 	@Test
 	public void SettingAndGettingMultiDimensionalArray() {
 		
-		double[][] array = {{1.0, 1.0, 1.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0, 1.0}};
+		double[][] array = {{1.0, 2.0, 3.0, 4.0, 5.0}, {5.0, 4.0, 3.0, 2.0, 1.0}};
 		
 		// put array creates a cell array
 		engMatLab.engPutArray("array", array);
@@ -130,18 +129,20 @@ public class AdapterTests {
 	}
 	
 	/**
-	 * Do some simple math to the array to make sure matlab reads the array correctly
+	 * Do matrix mathematics and validate the answer to verify that the conversion of
+	 * 2d java matrix to matlab type. 
 	 */
 	@Test
 	public void OperationsOnMultiDimensionalArraysAreCorrect() {
-		double[][] array = {{1.0}, {1.0}};
-		engMatLab.engPutArray("array", array); // this puts in a cell array at the moment, no good, we need double to be able to do stuff
+		double[][] array = {{2.0}, {1.0}};
+		
+		engMatLab.engPutArray("array", array);
 		
 		engMatLab.engEvalString("array = array*2");
 		
 		double[][] res = engMatLab.engGetArray("array");
-		
-		assertTrue(array[0][0]*2 == res[0][0]); // this motherfokker haz to do the job
+				
+		assertTrue(array[0][0]*2 == res[0][0]);
 		assertTrue(array[1][0]*2 == res[1][0]);
 	}
 }

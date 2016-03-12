@@ -86,26 +86,16 @@ public class JMatLinkAdapter implements IJMatLink {
 	}	
 	
 	/**
+	 * Retrieves a matlab-typed array and converts it to a two dimensional Java array.
 	 * 
 	 */
 	public double[][] engGetArray(String arrayS) {
 		
-		//
-		
-		/*
-		 * Hvorfor får vi matlab exception her?
-		 * 
-		 * Hvordan fungerte puka når denne tydeligvis ikke fungerte?
-		 * 
-		 * Sjekke matlabcontrol javadoc og walkthrough + test debug i puka når vi leser respirasjonsdata
-		 */
 		try {
-			MatlabNumericArray array = converter.getNumericArray(arrayS);
-			System.out.println(array.toString());
-			double[][] javaArray = array.getRealArray2D();
-			//Object o = proxy.getVariable(arrayS);
-			//double[][] ret = ((double[][]) proxy.getVariable(arrayS));
-					
+			MatlabNumericArray array = converter.getNumericArray(arrayS); // get numberic array
+			
+			double[][] javaArray = array.getRealArray2D(); // convert to java native type
+								
 			return javaArray;
 			
 		} catch (MatlabInvocationException e) {
@@ -114,9 +104,6 @@ public class JMatLinkAdapter implements IJMatLink {
 		}
 		return null;
 	}
-
-
-	
 	
 	/* *********ENGPUTARRAY*********************************/
 	/**
@@ -130,26 +117,21 @@ public class JMatLinkAdapter implements IJMatLink {
 		} catch (MatlabInvocationException e) {
 			e.printStackTrace();
 		}
-		
-		
 	}
 
 	public void engPutArray(String arrayS, double[] valueD) {
 		try {
-			proxy.setVariable(arrayS, valueD);
+			proxy.setVariable(arrayS, valueD); // this has to be tested.
 		} catch (MatlabInvocationException e) {
 			e.printStackTrace();
 		}
-		
 	}
 
 	public void engPutArray(String arrayS, double[][] valueDD) {
 		try {
 			//Create matlab variable
 			MatlabNumericArray mlArray = new MatlabNumericArray(valueDD, null);
-			
 			converter.setNumericArray(arrayS, mlArray);
-			//proxy.setVariable(arrayS, valueDD);
 		} catch (MatlabInvocationException e) {
 			e.printStackTrace();
 		}
