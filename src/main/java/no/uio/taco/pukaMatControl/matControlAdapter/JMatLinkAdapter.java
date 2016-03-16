@@ -11,7 +11,7 @@ public class JMatLinkAdapter implements IJMatLink {
 	MatlabProxyFactory factory;
 	
 	MatlabProxy proxy;
-	MatlabProxy bck;
+	MatlabProxy plainProxy; // this is used to keep a reference of the original proxy, in case we want to switch back to no debug mode...
 	
 	LoggingMatlabProxy logProxy;
 	
@@ -45,18 +45,16 @@ public class JMatLinkAdapter implements IJMatLink {
 	public void engOpen() {
 		try {
 			proxy = factory.getProxy();
-			bck = proxy;
+			plainProxy = proxy; // keep a copy of the original proxy
+			logProxy = new LoggingMatlabProxy(proxy); // for debug
 			//helpers
 			converter = new MatlabTypeConverter(proxy);
-			logProxy = new LoggingMatlabProxy(proxy); // for debug
-			
 		} catch (MatlabConnectionException e) {
 			// TODO: Debug information
 			e.printStackTrace();
-			System.exit(0);
+			System.exit(0); // terminate execution
 		}
 	}
-	
 	
 	/**
 	 * Passes instructions to MatLab using proxy.
@@ -67,7 +65,7 @@ public class JMatLinkAdapter implements IJMatLink {
 		try {
 			proxy.eval(evalS);
 		} catch (MatlabInvocationException e) {
-			// TODO Auto-generated catch block: Debuginformation if we crash
+			// TODO Auto-generated catch block: Debug information if we crash
 			e.printStackTrace();
 		}
 	}
@@ -296,7 +294,7 @@ public class JMatLinkAdapter implements IJMatLink {
 			proxy = logProxy;
 		}
 		else
-			proxy = bck;
+			proxy = plainProxy;
 		debug = debugB;
 	}
 
