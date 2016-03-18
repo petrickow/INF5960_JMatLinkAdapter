@@ -7,6 +7,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import matlabcontrol.MatlabInvocationException;
+
 public class AdapterTests {
 
 	private static JMatLinkAdapter engMatLab;
@@ -43,9 +45,32 @@ public class AdapterTests {
 	public void SettingAndGettingVariables() {
 		double dbl = 1.0;
 		engMatLab.engEvalString("variable = "+ dbl + ";");
-		double res = engMatLab.engGetScalar("variable");
-		assertEquals("The value of engGetScalar is the same as provided", dbl, res, 0.0);
+		double res;
+		try {
+			res = engMatLab.engGetScalar("variable");
+			assertEquals("The value of engGetScalar is the same as provided", dbl, res, 0.0);
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
+	
+	/**
+	 * Testing that we handle errors in some sense
+	 */
+	@Test
+	public void TryingToGetNonexistingScalar() {
+		MatlabInvocationException error = null;
+		double res;
+		try {
+			res = engMatLab.engGetScalar("nonExistent");
+		} catch (MatlabInvocationException e) {
+			error = e;
+		}
+		assertNotNull(error);
+		
+	}
+	
 	
 	/**
 	 * Test that engEvalString is able to call matlab standard functions. This test uses floor() from mathworks
@@ -56,9 +81,15 @@ public class AdapterTests {
 		double dbl = 3.3;
 		engMatLab.engEvalString("variable = " + dbl + ";");
 		engMatLab.engEvalString("result = floor(variable)");
-		double res = engMatLab.engGetScalar("result");
+		double res;
+		try {
+			res = engMatLab.engGetScalar("result");
+			assertNotEquals(dbl, res);
+		} catch (MatlabInvocationException e) {
+			
+		}
 		
-		assertNotEquals(dbl, res);
+		
 	}
 	
 	/**
@@ -70,12 +101,17 @@ public class AdapterTests {
 		double dbl = 3.0;
 		engMatLab.engPutArray("array", dbl);
 		
-		double res = engMatLab.engGetScalar("array"); 
-		assertEquals("Scalar set with engPutArray is retrievable with engGetScalar", dbl, res, 0.0);
-		
-		double[][] resArr = engMatLab.engGetArray("array");
-		assertEquals("The same result is retrieved with engGetArray", dbl, resArr[0][0], 0.0);
-		
+		double res;
+		try {
+			res = engMatLab.engGetScalar("array");
+			assertEquals("Scalar set with engPutArray is retrievable with engGetScalar", dbl, res, 0.0);
+			
+			double[][] resArr = engMatLab.engGetArray("array");
+			assertEquals("The same result is retrieved with engGetArray", dbl, resArr[0][0], 0.0);
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 	}
 	
 	/**

@@ -11,10 +11,14 @@ package no.uio.taco.pukaMatControl.puka;
  * @author  Joset A. Etzel
  */
 
-import javax.swing.table.*; import java.math.BigDecimal; import javax.swing.JOptionPane;
+import javax.swing.table.*;
+
+import matlabcontrol.MatlabInvocationException;
+
+import java.math.BigDecimal; import javax.swing.JOptionPane;
 import java.text.NumberFormat; import java.util.Locale; import java.util.ArrayList;
 
-public class frmRespiration extends javax.swing.JInternalFrame {
+public class frmRespiration extends javax.swing.JInternalFrame  {
 	private double[][] dblP; private double[][] dblT; 
 	private double[][] dblPlabels; private double[][] dblTlabels;
 	private static RespMeasures rmData;
@@ -496,7 +500,12 @@ public class frmRespiration extends javax.swing.JInternalFrame {
 			frmLoadData.engMatLab.engEvalString("[avgTI,stdTI,avgTE,stdTE] = calculateInsExpNoPauses(peaks,troughs);");			
 		}
 				
-		CalculateResp();  //shows results in the table and sets in rmData
+		try {
+			CalculateResp();
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}  //shows results in the table and sets in rmData
 		jTabbedPane1.setSelectedIndex(4);  //set next panel on top
 		
 		//save the peaks and troughs arrays to rmData - these are the locations (undecimated)
@@ -576,7 +585,7 @@ public class frmRespiration extends javax.swing.JInternalFrame {
 		jTabbedPane1.setSelectedIndex(3);  //set next panel on top
 	}//GEN-LAST:event_cmdPausesActionPerformed
 
-	private void CalculateResp() {
+	private void CalculateResp() throws MatlabInvocationException {
 		//sub does calculations in matlab on the troughs array - locations where done breathing out but not
     //yet started breathing in - to find basic statistics on the respiration during the stimulus
     double dblTemp = 0; BigDecimal jcBigDec; double dblTi = 0; double dblTtot = 0; int intSampling = 0;

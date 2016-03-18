@@ -2,6 +2,8 @@ package no.uio.taco.pukaMatControl.matControlAdapter;
 
 import java.awt.*;
 
+import matlabcontrol.MatlabInvocationException;
+
 public interface IJMatLink {
 
 	
@@ -25,7 +27,7 @@ public interface IJMatLink {
 	public String engGetOutputBuffer(long epI);
 	
 	public double engGetScalar(long epI, String arrayS);
-	public double engGetScalar(String arrayS); //?
+	public double engGetScalar(String arrayS) throws MatlabInvocationException; //?
 
 	public boolean engGetVisible(long epI); // visibility-status of matlab window
 	

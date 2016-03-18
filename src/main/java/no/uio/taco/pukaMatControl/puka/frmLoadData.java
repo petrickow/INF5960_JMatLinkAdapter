@@ -12,7 +12,11 @@ package no.uio.taco.pukaMatControl.puka;
 */
 
 import java.awt.*; import java.awt.event.*; import java.awt.datatransfer.*; import java.io.*;
-import javax.swing.filechooser.*; import javax.swing.*; import java.sql.*;
+import javax.swing.filechooser.*;
+
+import matlabcontrol.MatlabInvocationException;
+
+import javax.swing.*; import java.sql.*;
 import java.util.StringTokenizer; import java.util.ArrayList;
 import java.io.File;
 import javax.swing.event.InternalFrameEvent; import java.util.zip.*; import java.util.Enumeration;
@@ -295,7 +299,12 @@ public class frmLoadData extends javax.swing.JInternalFrame implements javax.swi
 		double dblTemp = 0; int intTime = 0; Integer IntTemp; String strClipName = ""; double dblTotalTime = 0;
 
 		engMatLab.engEvalString("size = max(size(data1));"); // this causes fault... size not created, how about n = size(data1); size = max(n); seems to work...
-		dblTemp = frmLoadData.engMatLab.engGetScalar("size");
+		try {
+			dblTemp = frmLoadData.engMatLab.engGetScalar("size");
+		} catch (MatlabInvocationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		dblTemp = dblTemp - 1;
 		IntTemp = new Integer(txtOnset.getText());
 		try { intTime = IntTemp.intValue(); }

@@ -10,7 +10,11 @@ package no.uio.taco.pukaMatControl.puka;
  *
  * @author  Joset A. Etzel
  */
-import java.util.*; import javax.swing.table.*; import javax.swing.*; import java.lang.Math; 
+import java.util.*; import javax.swing.table.*;
+
+import matlabcontrol.MatlabInvocationException;
+
+import javax.swing.*; import java.lang.Math; 
 import java.math.BigDecimal; import java.io.*; import java.text.NumberFormat; import java.util.Locale;
 
 /** GUI and code to calculate respiration, heart rate, and RSA measures.
@@ -128,7 +132,12 @@ public class frmRSA extends javax.swing.JInternalFrame {
     cmdRSA.setText("3. RSA calculation");
     cmdRSA.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        cmdRSAActionPerformed(evt);
+        try {
+			cmdRSAActionPerformed(evt);
+		} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
       }
     });
 
@@ -435,11 +444,17 @@ public class frmRSA extends javax.swing.JInternalFrame {
 			frmLoadData.engMatLab.engEvalString("load " + strInstallPath + "temp.ihr" + ";");
 			frmLoadData.engMatLab.engEvalString("ihr = temp(:,2)';");
 			
-			CalculateHRV();  //call sub to display HRV statistics
+			try {
+				CalculateHRV();
+			} catch (MatlabInvocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}  //call sub to display HRV statistics
+			
 			jTabbedPane1.setSelectedIndex(2);  //set next panel on top
 	}//GEN-LAST:event_cmdHRVActionPerformed
 		
-		 private void CalculateHRV() {
+		 private void CalculateHRV() throws MatlabInvocationException {
       //sub does calculations in matlab on the rrIntervals array (R peaks) to find basic HRV statistics during the stimulus
 			//RR array in matlab only has the peaks that happened during the clip time
       double dblTemp = 0; BigDecimal jcBigDec;
@@ -492,7 +507,7 @@ public class frmRSA extends javax.swing.JInternalFrame {
       return (intC - 1);  //subtract 1 to get the index of the largest time pt SMALLER than dblTimePt
     }
     
-    private void cmdRSAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdRSAActionPerformed
+    private void cmdRSAActionPerformed(java.awt.event.ActionEvent evt) throws MatlabInvocationException {//GEN-FIRST:event_cmdRSAActionPerformed
 			// use matlab to calculate the RSA and show the result in puka
 			double dblTemp = 0; BigDecimal jcBigDec; RespMeasures rmData; double[][] dblRSA; 
 			int intC = 0; ArrayList jcTempList = new ArrayList();

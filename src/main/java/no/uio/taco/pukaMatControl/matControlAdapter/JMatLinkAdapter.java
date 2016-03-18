@@ -61,7 +61,6 @@ public class JMatLinkAdapter implements IJMatLink {
 	 * @param A string with the expression you wish to evaluate using matlab
 	 */
 	public void engEvalString(String evalS) {
-		
 		try {
 			proxy.eval(evalS);
 		} catch (MatlabInvocationException e) {
@@ -73,22 +72,15 @@ public class JMatLinkAdapter implements IJMatLink {
 	/**
 	 * Get a variable from matlab workspace.
 	 */
-	public double engGetScalar(String arrayS) {
-		try {		
-			double ret = ((double[]) proxy.getVariable(arrayS))[0];
-			return (double) ret;
-		} catch (MatlabInvocationException e) {
-			// TODO Auto-generated catch block: Debuginformation if we crash
-			e.printStackTrace();
-		}
-		return 0;
+	public double engGetScalar(String arrayS) throws MatlabInvocationException  {
+		double ret = ((double[]) proxy.getVariable(arrayS))[0]; // MATLAB always thinks in arrays, a scalar is a double-array with one element 
+		return (double) ret;
 	}	
 	
 	/**
 	 * Retrieves a matlab-typed array and converts it to a two dimensional Java array.
 	 */
 	public double[][] engGetArray(String arrayS) {
-		
 		try {
 			MatlabNumericArray array = converter.getNumericArray(arrayS); // get numberic array
 			double[][] javaArray = array.getRealArray2D(); // convert to java native type
