@@ -19,7 +19,7 @@ public class AdapterTests {
 		System.out.println("Please wait while matlab is instansiated ... ");
 		engMatLab = new JMatLinkAdapter();  //initiate connection
 		engMatLab.engOpen();
-		engMatLab.setDebug(true); // to test debug logger class from matlabcontrol
+		engMatLab.setDebug(false); // to test debug logger class from matlabcontrol
 	}
 		
 	@AfterClass
@@ -174,14 +174,14 @@ public class AdapterTests {
 	}
 
 	/**
-	 * This has to be confimed manually at the moment...
+	 * This has to be confimed manually at the moment... ... ...
 	 */
 	@Test
 	public void DisableAndEnableLogger() {
-		engMatLab.setDebug(false);
-		engMatLab.engEvalString("not_printed = 1.0"); // find a way to capture stdout?
 		engMatLab.setDebug(true);
-		engMatLab.engEvalString("printed = 1.0");
-		assertTrue(true);
+		engMatLab.engEvalString("printed = 1.0"); // find a way to capture stdout? or check console...
+		engMatLab.setDebug(false);
+		engMatLab.engEvalString("not_printed = 1.0");
+		//assertTrue(true);
 	}
 }
