@@ -297,7 +297,4 @@ public class JMatLinkAdapter implements IJMatLink {
 			proxy = plainProxy;
 		debug = debugB;
 	}
-
-	
-
 }
