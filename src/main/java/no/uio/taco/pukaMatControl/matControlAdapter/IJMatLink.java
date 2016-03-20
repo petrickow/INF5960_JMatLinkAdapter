@@ -8,18 +8,20 @@ public interface IJMatLink {
 
 	
 	public void engClose();
-	public void engClose(long epI);
-	public void engCloseAll(); 
+	public void engClose(long epI); //NiU
+	public void engCloseAll(); //NiU
 
-	public void engEvalString(long epI, String evalS);
+	public void engEvalString(long epI, String evalS); //NiU
 	public void engEvalString(String evalS);
 	
 	public double[][] engGetArray(long epI, String arrayS);
 	public double[][] engGetArray(String arrayS);
+
+	/* Not used in puka... low priority*/
 	public String engGetCharArray(long epI, String arrayS);
 	public String engGetCharArray(String arrayS);
 	
-	/* Not used in puka... low priority*/
+
 	public Image engGetFigure(int figure, int dx, int dy); 
 	public Image engGetFigure(long epI, int figure, int dx, int dy);
 	

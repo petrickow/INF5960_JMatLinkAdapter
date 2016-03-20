@@ -10,11 +10,13 @@ ADCZero|0
 Length|0:10:12
 ClipName|Respiration : 10 min 12 sec
 ClipName|Ideal Test : 10 sec
+ClipName|test
 ClipLength|61248
 ClipLength|1000
+ClipLength|3000
 ColEKG|-1
 ColRespiration|1
 ColTrigger|1
-dbname|EduardoMovies
-dbname|subjectData
 dbname|newTest
+dbname|subjectData
+dbname|EduardoMovies

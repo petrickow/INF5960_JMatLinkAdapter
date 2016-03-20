@@ -16,10 +16,10 @@ public class AdapterTests {
 	
 	@BeforeClass
 	public static void setup() {
-		System.out.println("Please wait while matlab is instansiated ... ");
+		System.out.println("Please wait while matlab is instansiated ... "); 
 		engMatLab = new JMatLinkAdapter();  //initiate connection
 		engMatLab.engOpen();
-		engMatLab.setDebug(false); // to test debug logger class from matlabcontrol
+		engMatLab.setDebug(false);
 	}
 		
 	@AfterClass
@@ -88,8 +88,6 @@ public class AdapterTests {
 		} catch (MatlabInvocationException e) {
 			
 		}
-		
-		
 	}
 	
 	/**
@@ -120,20 +118,13 @@ public class AdapterTests {
 	 */
 	@Test
 	public void SettingAndGettingOneDimensionalArray() {
-		
-		double[] array = {1.0, 1.0, 1.0, 1.0, 1.0};
-		
-		// put array creates a cell array
-		engMatLab.engPutArray("array", array);
-		//Change put array to convert into matlab type
-		double[][] res = engMatLab.engGetArray("array");
-		
+		double[] array = {1.0, 2.2, 3.3, 4.4, 5.5};
+		engMatLab.engPutArray("array", array); // put array creates a cell array
+		double[][] res = engMatLab.engGetArray("array"); //Change put array to convert into matlab type
 		assertTrue(res.length == 1); 
-		
-		double[] first = res[0];
 
+		double[] first = res[0]; // convert to 1 dimensional array for ease of comparison.
 		assertArrayEquals(array, first, 0.0); // we want the array to be identical when it is returned.
-		
 	}
 	
 	/**
@@ -142,17 +133,11 @@ public class AdapterTests {
 	 */
 	@Test
 	public void SettingAndGettingMultiDimensionalArray() {
-		
-		double[][] array = {{1.0, 2.0, 3.0, 4.0, 5.0}, {5.0, 4.0, 3.0, 2.0, 1.0}};
-		
-		// put array creates a cell array
-		engMatLab.engPutArray("array", array);
-		
-		//Change put array to convert into matlab type
-		double[][] res = engMatLab.engGetArray("array");
+		double[][] array = {{1.1, 2.2, 3.3, 4.4, 5.5}, {5.1, 4.2, 3.3, 2.4, 1.5}};
+		engMatLab.engPutArray("array", array); // put array creates a cell array
+		double[][] res = engMatLab.engGetArray("array"); // Change put array to convert into matlab type
 
 		assertArrayEquals(array, res); // we want the array to be identical when it is returned.
-		
 	}
 	
 	/**
@@ -164,7 +149,6 @@ public class AdapterTests {
 		double[][] array = {{2.0}, {1.0}};
 		
 		engMatLab.engPutArray("array", array);
-		
 		engMatLab.engEvalString("array = array*2");
 		
 		double[][] res = engMatLab.engGetArray("array");
@@ -174,7 +158,7 @@ public class AdapterTests {
 	}
 
 	/**
-	 * This has to be confimed manually at the moment... ... ...
+	 * TODO: This has to be confirmed manually at the moment... ... ...
 	 */
 	@Test
 	public void DisableAndEnableLogger() {
