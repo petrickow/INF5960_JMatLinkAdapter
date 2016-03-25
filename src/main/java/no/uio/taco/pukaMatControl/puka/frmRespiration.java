@@ -812,7 +812,7 @@ public class frmRespiration extends javax.swing.JInternalFrame  {
 			/** returns rmData filled with derived respiration data
 		 * for the clip.  Called after CalculateResp().
 		 * @return RespMeasures object filled with derived respiration data.
-		 */		
+w	 */		
 		public static RespMeasures getRespDataObject() { return rmData;	}
 	
   // Variables declaration - do not modify//GEN-BEGIN:variables

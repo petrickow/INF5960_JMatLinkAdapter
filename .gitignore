@@ -13,7 +13,6 @@
 
 # Maven
 log/
-target/
 
 # Matlab
 *.asv

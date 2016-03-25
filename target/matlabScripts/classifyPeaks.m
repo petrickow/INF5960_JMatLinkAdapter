@@ -7,33 +7,35 @@ peakLabels = []; % labels for type of peak: 1 = valid, 2 = invalid, 3 = question
 troughLabels = []; % labels trough type: 1 = valid, 2 = invalid, 3 = question
 validPeaks = [];
 validTroughs = [];
-thisPeakLabel = 0; thisTroughLabel = 0; i = 1;
+thisPeakLabel = 0; thisTroughLabel = 0; ind = 1;
 
+hz = 50;
 % check if the first peak is too close to the start of the signal
-if P(1) > 30
+if P(1) > hz
     start = 1;  % start at first - there's enough room for a window
 else
-    while P(i) < 30
-        i = i + 1;
+    while P(ind) < hz
+        ind = ind + 1;
     end;
-    start = i;  % start at first peak higher than 101
+    start = ind;  % start at first peak higher than 101
 end;
 % check if the last peak is too close to the end of the signal
 numPeaks = max(size(P));
-if (P(numPeaks) + 30) < max(size(Qd))
+if (P(numPeaks) + hz) < max(size(Qd))
     stop = numPeaks;      % stop at last peak
 else
-    i = -1;
-    while (P(numPeaks + i) + 30) > max(size(Qd))
-        i = i - 1;
+    ind = -1;
+    while (P(numPeaks + ind) + hz) > max(size(Qd))
+        ind = ind - 1;
     end;
-    stop = numPeaks + i;
+    stop = numPeaks + ind;
 end;
 
 % first check all of the peaks
-for i = start:stop
-    windowB4 = Qd((P(i)-150):P(i));  % window before the peak
-    windowAf = Qd(P(i):(P(i)+ 150));  % window after the peak
+for ind = start:stop
+    disp(P(ind) + ' ' + hz);
+    windowB4 = Qd((P(ind)-hz):P(ind));  % window before the peak
+    windowAf = Qd(P(ind):(P(ind)+ hz));  % window after the peak
     
     diffWB4 = diff(windowB4); % difference between all adjacent pts in the window
     diffWAf = diff(windowAf);
@@ -50,7 +52,7 @@ for i = start:stop
     thisPeakLabel = 1;  % assume that most peaks are VALID
     
     % start or end of window higher than peak
-    if windowB4(1) >= Qd(P(i)) | windowAf(150) >= Qd(P(i))  
+    if windowB4(1) >= Qd(P(ind)) | windowAf(hz) >= Qd(P(ind))  
         thisPeakLabel = 2; % label peak as invalid
         a = 'start or end of window higher than peak'
     end;
@@ -87,31 +89,31 @@ end;
 
 %%%%%%%%%%%%%%%%%%%TROUGHS%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % check if the first trough is too close to the start of the signal
-i = 1;  % reset marker
-if T(1) > 30
+ind = 1;  % reset marker
+if T(1) > hz
     start = 1;  % start at first - there's enough room for a window
 else
-    while T(i) < 30
-        i = i + 1;
+    while T(ind) < hz
+        ind = ind + 1;
     end;
-    start = i;  % start at first trough higher than 101
+    start = ind;  % start at first trough higher than 101
 end;
 % check if the last trough is too close to the end of the signal
 numTroughs = max(size(T));
-if (T(numTroughs) + 30) < max(size(Qd))
+if (T(numTroughs) + hz) < max(size(Qd))
     stop = numTroughs;      % stop at last trough
 else
-    i = -1;
-    while (T(numTroughs + i) + 30) > max(size(Qd))
-        i = i - 1;
+    ind = -1;
+    while (T(numTroughs + ind) + hz) > max(size(Qd))
+        ind = ind - 1;
     end;
-    stop = numTroughs + i;
+    stop = numTroughs + ind;
 end;
 
 % check all of the troughs
-for i = start:stop
-    windowB4 = Qd((T(i)- 150):T(i));  % window before the trough
-    windowAf = Qd(T(i):(T(i)+ 150));  % window after the trough
+for ind = start:stop
+    windowB4 = Qd((T(ind)- hz):T(ind));  % window before the trough
+    windowAf = Qd(T(ind):(T(ind)+ hz));  % window after the trough
     
     diffWB4 = diff(windowB4); % difference between adjacent pts in the window
     diffWAf = diff(windowAf);
@@ -128,7 +130,7 @@ for i = start:stop
     thisTroughLabel = 1;  % assume most troughs valid
     
     % start or end of window lower than marked trough
-    if windowB4(1) <= Qd(T(i)) | windowAf(150) <= Qd(T(i))  
+    if windowB4(1) <= Qd(T(ind)) | windowAf(hz) <= Qd(T(ind))  
         thisTroughLabel = 2; % label trough as invalid
         a = 'start or end of window lower than marked trough'
     end;
@@ -165,21 +167,21 @@ end;
 plot(Qd, 'm'); hold on;  
 whitebg([.9 .9 .9]);   % set background color to gray
 n = max(size(P));  % n has number of peaks found
-for i = 1:n
-    if peakLabels(i) == 1
-        plot(P(i), Qd(P(i)), 'xb', 'MarkerSize', 10);
-    elseif peakLabels(i) == 2
-        plot(P(i), Qd(P(i)), 'xr', 'MarkerSize', 10);
+for ind = 1:n
+    if peakLabels(ind) == 1
+        plot(P(ind), Qd(P(ind)), 'xb', 'MarkerSize', 10);
+    elseif peakLabels(ind) == 2
+        plot(P(ind), Qd(P(ind)), 'xr', 'MarkerSize', 10);
     end;
-    text(P(i), Qd(P(i)) + th*.5, ['p', int2str(i)], 'FontSize', 8);
+    text(P(ind), Qd(P(ind)) + th*.5, ['p', int2str(ind)], 'FontSize', 8);
 end;
 n = max(size(T)); % number of troughs
-for i = 1:n
-    if troughLabels(i) == 1
-        plot(T(i), Qd(T(i)), 'xb', 'MarkerSize', 10);
-    elseif troughLabels(i) == 2
-        plot(T(i), Qd(T(i)), 'xr', 'MarkerSize', 10);
+for ind = 1:n
+    if troughLabels(ind) == 1
+        plot(T(ind), Qd(T(ind)), 'xb', 'MarkerSize', 10);
+    elseif troughLabels(ind) == 2
+        plot(T(ind), Qd(T(ind)), 'xr', 'MarkerSize', 10);
     end;
-    text(T(i), Qd(T(i)) - th*.5, ['t', int2str(i)], 'FontSize', 8);
+    text(T(ind), Qd(T(ind)) - th*.5, ['t', int2str(ind)], 'FontSize', 8);
 end;
 hold off;

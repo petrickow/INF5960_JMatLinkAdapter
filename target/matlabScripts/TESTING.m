@@ -1,0 +1,10 @@
+var f = 24;
+var x = seq(0,10, by=1/f);
+var y = sin(2*pi*x);
+var y = ts(y, start=0, frequency=f);
+var op = par(mfrow=c(4,1), mar=c(2,4,2,2)+.1);
+plot(y, xlab='', ylab='');
+acf(y,  main='');
+pacf(y, main='');
+spectrum(y, main='', xlab='');
+par(op);
