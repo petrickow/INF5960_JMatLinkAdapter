@@ -12,7 +12,7 @@ thisTrough = 0; nextPeak = 0; prevPeak = 0;
 
 numPeaks = max(size(validPeaks));  % # of valid peaks after classifyPeaks.m
 numTroughs = max(size(validTroughs));
-
+disp('mofo!');
 for i = 1:numTroughs
     thisTrough = validTroughs(i);  % going to find the pause size for this trough
     if validPeaks(1) < validTroughs(1)    % peak-first signal
@@ -47,11 +47,11 @@ for i = 1:numTroughs
     % loop until end of window is sth HIGHER than the trough
     while (Qd(thisTrough + m) - Qd(thisTrough)) < sth
         if (thisTrough + m) == 2
-		    m = m + 1
-		    break;
-	    else
+            m = m + 1
+            break;
+        else
 	       m = m - 1;  % back up one more step
-	    end;
+        end;
     end;
 	
     if thisTrough == 11499
@@ -64,13 +64,13 @@ for i = 1:numTroughs
         else
             littles = 0;  % other - medium or steep slope
         end;
-        if (Qd(thisTrough + m - 2) - Qd(thisTrough + m) < 0)
+        if (Qd(thisTrough + m - 1) - Qd(thisTrough + m) < 0)
             negatives = negatives + 1;   % this point lower than last - should be higher
         else
             negatives = 0;
         end;
         
-	if thisTrough == 11499
+        if thisTrough == 11499
              s = ['m = ', int2str(m), ' looping back']
         end;
 		
@@ -109,7 +109,7 @@ for i = 1:numTroughs
     end;
      
     while stop == 0   % now loop back towards the trough until a stopping condition is met
-        thisSlope = Qd(thisTrough + m + 2) - Qd(thisTrough + m);  % slope of last point
+        thisSlope = Qd(thisTrough + m + 1) - Qd(thisTrough + m);  % slope of last point
         if abs(thisSlope) < ssth 
             littles = littles + 1;  % zero or not too steep slope
         else

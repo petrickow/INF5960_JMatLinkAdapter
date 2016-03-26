@@ -26,7 +26,7 @@ for ind = 1:numPeaks
         else
             prevTrough = validTroughs(1);  % assign to first trough
         end;
-    else
+    else % through first
         if ind < numTroughs
             nextTrough = validTroughs(ind + 1);  % trough-first, so next trough has index + 1 number
         else
@@ -56,7 +56,10 @@ for ind = 1:numPeaks
     end;
     % now loop back until a stopping condition is met - that is the end of the peak 
     while stop == 0 
-        if abs(Qd(thisPeak + m - 2) - Qd(thisPeak + m)) < ssth 
+        disp('thisPeak and m');
+        disp(thisPeak);
+        disp(m);
+        if abs(Qd(thisPeak + m - 1) - Qd(thisPeak + m)) < ssth % WHY -2?
             littles = littles + 1;  % last point has zero or not-too-steep slope
         else
             littles = 0;  % other - medium or steep slope
@@ -68,6 +71,7 @@ for ind = 1:numPeaks
         end;
                 
         if m == -1 
+            disp('done');
             m = 0; stop = 1;  % back to trough point - stop
             s = ['m == 1 - Lp', int2str(ind)]
         elseif Qd(thisPeak + m) >= Qd(thisPeak)
@@ -101,7 +105,7 @@ for ind = 1:numPeaks
     end;
      
     while stop == 0 
-        thisSlope = Qd(thisPeak + m + 2) - Qd(thisPeak + m);  % slope of last point
+        thisSlope = Qd(thisPeak + m + 1) - Qd(thisPeak + m);  % slope of last point
         if abs(thisSlope) < ssth 
             littles = littles + 1;  % zero or not too steep slope
         else
@@ -132,4 +136,6 @@ for ind = 1:numPeaks
         end;
     end;
     newP = [newP, (thisPeak + m)];  % add in new point
+    disp('all set');
+    disp(newP);  
 end;        

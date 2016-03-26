@@ -578,10 +578,14 @@ public class frmRespiration extends javax.swing.JInternalFrame  {
 		
 		DoApply();  //call cmdApply first
 		frmLoadData.engMatLab.engEvalString("[validPeaks, validTroughs] = makeValidArrays(P,T,peakLabels, troughLabels);");
+		System.out.println("donem with makeValidArrays");
 		frmLoadData.engMatLab.engEvalString("[newP] = markPeakPauses(Qd, validPeaks, validTroughs, th);");
+		System.out.println("donem with markPeakPauses");
 		frmLoadData.engMatLab.engEvalString("[newT] = markTroughPauses(Qd, validPeaks, validTroughs, th);");
+		System.out.println("donem with markTroughPauses");
 		frmLoadData.engMatLab.engEvalString("plotPauses(Qd, validPeaks, validTroughs, th, newP, newT);");		
-
+		System.out.println("donem with plotPauses");
+		
 		jTabbedPane1.setSelectedIndex(3);  //set next panel on top
 	}//GEN-LAST:event_cmdPausesActionPerformed
 
@@ -726,11 +730,11 @@ public class frmRespiration extends javax.swing.JInternalFrame  {
 		else if (chkPeaks.isSelected() == false & chkTroughs.isSelected() == false) { JOptionPane.showMessageDialog(null, "You must selected to view either peaks, troughs, or both.", "Error", JOptionPane.ERROR_MESSAGE); return; }
 		
 		//send the new arrays to matlab and replot
-    frmLoadData.engMatLab.engPutArray("peakLabels", dblPlabels);  
-    frmLoadData.engMatLab.engPutArray("troughLabels", dblTlabels); 		
+	    frmLoadData.engMatLab.engPutArray("peakLabels", dblPlabels);  
+	    frmLoadData.engMatLab.engPutArray("troughLabels", dblTlabels); 		
 		frmLoadData.engMatLab.engPutArray("Which", dblWhich); frmLoadData.engMatLab.engPutArray("What", dblWhat);
 		frmLoadData.engMatLab.engEvalString("redrawResp(Qd,P,T,th,peakLabels,troughLabels,What, Which);");
-}
+	}
 
 	private void cmdCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdCancelActionPerformed
 		//just close the form
@@ -761,7 +765,7 @@ public class frmRespiration extends javax.swing.JInternalFrame  {
 		//peak labels: 1 = valid, 2 = invalid
 		intRow = -1;
 		for (intC = 0; intC < dblPlabels[0].length; intC++) {  
-			System.out.println("peak " + intC);
+			//System.out.println("peak " + intC);
 			if (dblPlabels[0][intC] == 1) {	BolTemp = new Boolean(true); }  //good peak
 			else { BolTemp = new Boolean(false); } //bad or questionable peak
 
