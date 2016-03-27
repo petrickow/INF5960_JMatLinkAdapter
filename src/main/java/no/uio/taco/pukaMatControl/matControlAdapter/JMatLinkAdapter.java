@@ -24,11 +24,12 @@ public class JMatLinkAdapter implements IJMatLink {
 	public JMatLinkAdapter() {
 		MatlabProxyFactoryOptions options;
         options = new MatlabProxyFactoryOptions.Builder()
-                .setHidden(true) // just the command window
+        		.setLogFile("matlabctrlLog.txt")
+        		.setHidden(true) // just the command window
                 .build();
         
 		factory = new MatlabProxyFactory(options);
-		debug = true;
+		
 	}
 
 	/**
@@ -50,6 +51,7 @@ public class JMatLinkAdapter implements IJMatLink {
 			logProxy = new LoggingMatlabProxy(proxy); // for debug
 			//helpers
 			converter = new MatlabTypeConverter(proxy);
+			setDebug(true);
 		} catch (MatlabConnectionException e) {
 			// TODO: Debug information
 			e.printStackTrace();

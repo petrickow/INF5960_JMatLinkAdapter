@@ -49,12 +49,13 @@ public class frmLoadData extends javax.swing.JInternalFrame implements javax.swi
 
 			engMatLab = new JMatLinkAdapter();  //initiate connection
 			engMatLab.engOpen();
-/*      try {
-       System.load("JMatlink.dll");
-       engMatLab.setDebug( true );
-		int intC = engMatLab.engOpen();  //open connection to MATLAB
-      } catch (Exception e) { e.printStackTrace(); }
-*/
+			/*
+			try {
+		       System.load("JMatlink.dll");
+		       engMatLab.setDebug( true );
+				int intC = engMatLab.engOpen();  //open connection to MATLAB
+	      	} catch (Exception e) { e.printStackTrace(); }
+			*/
     }
 
 		public void FillBoxes() {

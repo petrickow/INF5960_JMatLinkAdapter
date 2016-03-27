@@ -63,19 +63,19 @@ goodP = [];  goodT = [];
 onsetTime = onsetTime/5; endTime = endTime/5;  % to match decimation
 n = length(P);
 for ind = 1:n
-     if P(ind) > onsetTime
+    if P(ind) > onsetTime
         if P(ind) < endTime
-           goodP = [goodP, P(ind)];   % only add in peaks bigger than onsetTime
+            goodP = [goodP, P(ind)];   % only add in peaks bigger than onsetTime
+        end;
 	end;
-     end;
 end;
 n = length(T);
 for ind = 1:n
      if T(ind) > onsetTime
         if T(ind) < endTime
           goodT = [goodT, T(ind)];   % only add in troughs bigger than onsetTime
-	end;
-     end;
+        end;
+    end;
 end;
 
 P = []; T = []; P = goodP; T = goodT;  % reset arrays for return values
