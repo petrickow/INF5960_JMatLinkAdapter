@@ -3,8 +3,9 @@ function [P,T,th,Qd] = newPT(Qraw, factor, onsetTime, endTime);
 % call by >> [P,T,th,Qd] = newPT(Q);
 % code adapted from Todd & Andrews. The Identification of Peaks in Physiological
 % Signals. Computers and Biomedical Research 32, 322-335 (1999).
-
+%disp(numel(Qraw));
 Qd = decimate(Qraw, 5);  % downsample the signal
+%disp(numel(Qd));
 
 d = 1;      % variable to show if signal unknown (1), trough-to-peak (2),
             % or peak-to-trough (3)
@@ -20,38 +21,38 @@ th = abs(prctile(Qd,75) - prctile(Qd,25)) * factor;
 % th = abs(max(Qd) - min(Qd)) * .5;  % threshold
 
 [n] = max(size(Qd));  % get size of the array so can do the for loop
-for i = 1:n
+for ind = 1:n
     if d == 1
-        if Qd(a) >= Qd(i) + th
+        if Qd(a) >= Qd(ind) + th
             d = 3;
-        elseif Qd(i) >= Qd(b) + th
+        elseif Qd(ind) >= Qd(b) + th
             d = 2;
         end;
-        if Qd(a) < Qd(i)
-            a = i;
-        elseif Qd(i) < Qd(b)
-            b = i;
+        if Qd(a) < Qd(ind)
+            a = ind;
+        elseif Qd(ind) < Qd(b)
+            b = ind;
         end;
-        S = i;
+        S = ind;
     elseif d == 2  % signal rising, trough-to-peak
-        if Qd(a) < Qd(i) % still rising
-            S = i; 
-            a = i;
-        elseif Qd(a) == Qd(i)
-            S = [S,i];            
-        elseif Qd(a) >= Qd(i) + th
-            P = [P,S]; S = i;
-            b = i; d = 3;
+        if Qd(a) < Qd(ind) % still rising
+            S = ind; 
+            a = ind;
+        elseif Qd(a) == Qd(ind)
+            S = [S,ind];            
+        elseif Qd(a) >= Qd(ind) + th
+            P = [P,S]; S = ind;
+            b = ind; d = 3;
         end;
     elseif d == 3  % signal falling, peak-to-trough
-        if Qd(i) <= Qd(b)
-            S = i; 
-            b = i;
-        elseif Qd(b) == Qd(i)
-           S = [S,i];
-        elseif Qd(i) >= Qd(b) + th
-            T = [T,S]; S = i;
-            a = i; d = 2;
+        if Qd(ind) <= Qd(b)
+            S = ind; 
+            b = ind;
+        elseif Qd(b) == Qd(ind)
+           S = [S,ind];
+        elseif Qd(ind) >= Qd(b) + th
+            T = [T,S]; S = ind;
+            a = ind; d = 2;
         end;
     end;
 end;
@@ -61,18 +62,18 @@ end;
 goodP = [];  goodT = [];
 onsetTime = onsetTime/5; endTime = endTime/5;  % to match decimation
 n = length(P);
-for i = 1:n
-     if P(i) > onsetTime
-        if P(i) < endTime
-           goodP = [goodP, P(i)];   % only add in peaks bigger than onsetTime
+for ind = 1:n
+     if P(ind) > onsetTime
+        if P(ind) < endTime
+           goodP = [goodP, P(ind)];   % only add in peaks bigger than onsetTime
 	end;
      end;
 end;
 n = length(T);
-for i = 1:n
-     if T(i) > onsetTime
-        if T(i) < endTime
-          goodT = [goodT, T(i)];   % only add in troughs bigger than onsetTime
+for ind = 1:n
+     if T(ind) > onsetTime
+        if T(ind) < endTime
+          goodT = [goodT, T(ind)];   % only add in troughs bigger than onsetTime
 	end;
      end;
 end;

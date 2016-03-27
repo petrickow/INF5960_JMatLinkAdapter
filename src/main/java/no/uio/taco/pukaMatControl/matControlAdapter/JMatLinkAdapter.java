@@ -28,6 +28,7 @@ public class JMatLinkAdapter implements IJMatLink {
                 .build();
         
 		factory = new MatlabProxyFactory(options);
+		debug = true;
 	}
 
 	/**

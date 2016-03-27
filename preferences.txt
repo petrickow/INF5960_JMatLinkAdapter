@@ -2,7 +2,7 @@ WFDBDirectory|C:\cygwin64\home\admin\wfdb-10.5.23\app\
 InstallPath|C:\Users\admin\workspace\no.uio.taco.pukaMatControl\target\
 WFDBDataPath|c:\temp\
 ConvertECGPath|C:\Users\admin\workspace\no.uio.taco.pukaMatControl\target\
-SampleFreq|100
+SampleFreq|1000
 SignalUnits|mV
 SignalGain|2000
 ADCResolution|16
@@ -11,9 +11,11 @@ Length|0:10:12
 ClipName|Respiration : 10 min 12 sec
 ClipName|Ideal Test : 10 sec
 ClipName|test
+ClipName|1000hz 10 sec test
 ClipLength|61248
 ClipLength|1000
 ClipLength|3000
+ClipLength|10000
 ColEKG|-1
 ColRespiration|1
 ColTrigger|1
