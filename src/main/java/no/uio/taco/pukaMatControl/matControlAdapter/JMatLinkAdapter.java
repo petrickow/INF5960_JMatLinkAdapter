@@ -45,17 +45,28 @@ public class JMatLinkAdapter implements IJMatLink {
 	 *  @return Proxy object from MatlabProxyFactory 
 	 */
 	public void engOpen() {
-		try {
-			proxy = factory.getProxy();
-			plainProxy = proxy; // keep a copy of the original proxy
-			logProxy = new LoggingMatlabProxy(proxy); // for debug
-			//helpers
-			converter = new MatlabTypeConverter(proxy);
-			setDebug(true);
-		} catch (MatlabConnectionException e) {
-			// TODO: Debug information
-			e.printStackTrace();
-			System.exit(0); // terminate execution
+		if (proxy != null && proxy.isConnected()) {
+			try {
+				proxy.eval("clear;");
+			} catch (MatlabInvocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		else {
+			try {
+				proxy = factory.getProxy();
+				plainProxy = proxy; // keep a copy of the original proxy
+				logProxy = new LoggingMatlabProxy(proxy); // for debug
+				//helpers
+				converter = new MatlabTypeConverter(proxy);
+				setDebug(true);
+				
+			} catch (MatlabConnectionException e) {
+				// TODO: Debug information
+				e.printStackTrace();
+				System.exit(0); // terminate execution
+			}
 		}
 	}
 	

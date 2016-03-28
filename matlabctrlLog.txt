@@ -2024,3 +2024,66 @@ Qd =
     0.0447
     0.0316
 
+
+s =
+
+m == 1 - Lp1
+
+
+s =
+
+m <= 1 - Rp1
+
+
+s =
+
+m == 1 - Lp2
+
+
+s =
+
+m <= 1 - Rp2
+
+
+s =
+
+m == 1 - Lp3
+
+
+s =
+
+m <= 1 - Rp3
+
+
+s =
+
+littles > 30 - LT1 thisTrough=396 mark=354
+
+
+s =
+
+littles > 30 - RT1 thisTrough=396 mark=438
+
+
+s =
+
+littles > 30 - LT2 thisTrough=996 mark=954
+
+
+s =
+
+littles > 30 - RT2 thisTrough=996 mark=1038
+
+
+s =
+
+littles > 30 - LT3 thisTrough=1596 mark=1554
+
+
+s =
+
+littles > 30 - RT3 thisTrough=1596 mark=1638
+
+{Error using <a href="matlab:helpUtils.errorDocCallback('plot')" style="font-weight:bold">plot</a>
+Invalid first data argument
+} 

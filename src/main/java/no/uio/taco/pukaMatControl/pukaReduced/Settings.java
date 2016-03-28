@@ -1,5 +1,11 @@
-package pukaReduced;
+package no.uio.taco.pukaMatControl.pukaReduced;
 
+/**
+ * This class contains values that are used in the calculations done by
+ * the puka matlab scripts. Contains both 
+ * @author Cato Danielsen
+ *
+ */
 public class Settings {
 	String filename;
 	String scriptPath;
@@ -13,16 +19,8 @@ public class Settings {
 	int intStopTime = 0; 
 	int intStartTime = 0;
 	
-	
-	
-	
-	
 	public Settings() {
-		
 		scriptPath = System.getProperty("user.dir") + "\\lib\\command\\matlabScripts";
 		filename = System.getProperty("user.dir") + "\\signal.txt"; // default to signal.txt in root folder
-		
 	}
-	
-
 }
