@@ -25,7 +25,7 @@ public class JMatLinkAdapter implements IJMatLink {
 		MatlabProxyFactoryOptions options;
         options = new MatlabProxyFactoryOptions.Builder()
         		.setLogFile("matlabctrlLog.txt")
-        		.setHidden(true) // just the command window
+        		.setHidden(false) // just the command window
                 .build();
         
 		factory = new MatlabProxyFactory(options);
@@ -67,7 +67,6 @@ public class JMatLinkAdapter implements IJMatLink {
 		try {
 			proxy.eval(evalS);
 		} catch (MatlabInvocationException e) {
-			// TODO Auto-generated catch block: Debug information if we crash
 			e.printStackTrace();
 		}
 	}
