@@ -16,7 +16,8 @@ public class PukaReduced {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 	        @Override
             public void run() {
-        		System.out.println("\tGot terminated, but does not show up when terminating in eclipse...");	
+        		System.out.println("\tGot terminated\n"
+        				+ "but does not hook when terminating in eclipse...");	
     			//Launcher.kill();
             }   
         }); 
@@ -30,7 +31,7 @@ public class PukaReduced {
 		while (!input.equalsIgnoreCase("quit")) {
 			
 			
-			System.out.print("> ");
+			System.out.print("$> ");
 			input = keyboard.nextLine().trim();
 			switch (input) {
 				case "debug": 

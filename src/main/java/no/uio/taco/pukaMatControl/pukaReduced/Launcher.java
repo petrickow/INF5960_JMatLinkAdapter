@@ -149,10 +149,15 @@ public class Launcher {
 	 * Clean the launcher settings and step
 	 */
 	public static void clean() {
+		String temp;
 		step = 1; // clear steps 
-		String temp = settings.filename; // keep filename
-		settings = new Settings(); // clear all settings
-		settings.filename = temp; 
+		if (settings != null) {
+			temp = settings.filename; // keep filename
+			settings = new Settings(); // clear all settings
+			settings.filename = temp;
+		} else {} // initial run, we  don't have to do anything, launch creates settingsrun
+		
+		 
 	}
 	
 	public static void kill() {
