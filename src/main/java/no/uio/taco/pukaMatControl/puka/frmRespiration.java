@@ -580,13 +580,13 @@ public class frmRespiration extends javax.swing.JInternalFrame  {
 		
 		DoApply();  //call cmdApply first
 		frmLoadData.engMatLab.engEvalString("[validPeaks, validTroughs] = makeValidArrays(P,T,peakLabels, troughLabels);");
-		System.out.println("done with makeValidArrays");
+		//System.out.println("done with makeValidArrays");
 		frmLoadData.engMatLab.engEvalString("[newP] = markPeakPauses(Qd, validPeaks, validTroughs, th);");
-		System.out.println("done with markPeakPauses");
+		//System.out.println("done with markPeakPauses");
 		frmLoadData.engMatLab.engEvalString("[newT] = markTroughPauses(Qd, validPeaks, validTroughs, th);");
-		System.out.println("done with markTroughPauses");
+		//System.out.println("done with markTroughPauses");
 		frmLoadData.engMatLab.engEvalString("plotPauses(Qd, validPeaks, validTroughs, th, newP, newT);");		
-		System.out.println("done with plotPauses");
+		//System.out.println("done with plotPauses");
 		
 		jTabbedPane1.setSelectedIndex(3);  //set next panel on top
 	}//GEN-LAST:event_cmdPausesActionPerformed

@@ -168,4 +168,57 @@ public class AdapterTests {
 		engMatLab.engEvalString("not_printed = 1.0");
 		//assertTrue(true);
 	}
+	
+	@Test
+	public void VerifyMATLABTypes() {
+		double[][] arrDD = {{1.1, 2.2, 3.3, 4.4, 5.5}, {5.1, 4.2, 3.3, 2.4, 1.5}};
+		double[] arrD = {1.0, 2.2, 3.3, 4.4, 5.5};
+		double D = 3.3;
+		double ans = 0.0;
+		try {
+			engMatLab.engPutArray("d", D);
+			engMatLab.engEvalString("isscalar(d)");
+			engMatLab.engEvalString("ans = double(ans)"); // has to convert to double to get the right type back 
+			ans = engMatLab.engGetScalar("ans");
+			
+			assertTrue(ans == 1);
+			
+			engMatLab.engPutArray("d", arrD);
+			engMatLab.engEvalString("isnumeric(d)");
+			engMatLab.engEvalString("ans = double(ans)");
+			ans = engMatLab.engGetScalar("ans");
+			assertTrue(ans == 1);
+			
+			engMatLab.engPutArray("d", arrDD);
+			engMatLab.engEvalString("isnumeric(d)");
+			engMatLab.engEvalString("ans = double(ans)");
+			ans = engMatLab.engGetScalar("ans");
+			assertTrue(ans == 1);
+		} catch (MatlabInvocationException e) {
+			e.printStackTrace();
+		}
+		
+		engMatLab.engEvalString("whos");
+	}
+	
+	@Test
+	public void VerifyIndexingOfArrays() {
+		double[][] arrDD = {{1.1, 2.2, 3.3, 4.4, 5.5}, {5.1, 4.2, 3.3, 2.4, 1.5}};
+		double ans = 0.0;
+		try {
+			engMatLab.engPutArray("arr", arrDD);
+			engMatLab.engEvalString("first = arr(1,1)");
+			ans = engMatLab.engGetScalar("first");
+			assertTrue(ans == arrDD[0][0]);
+			
+			int length = arrDD.length;
+			engMatLab.engEvalString("last = arr("+length+","+length+");");
+			ans = engMatLab.engGetScalar("last");
+			assertTrue(ans == arrDD[length-1][length-1]);
+		} catch (MatlabInvocationException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
 }
