@@ -22,15 +22,13 @@ public class PukaReduced {
             }   
         }); 
 		
-		
 		String fname = parseArgs(args);
 		Scanner keyboard = new Scanner(System.in);
 		printHelp();
 		
 		String input = ""; 
 		while (!input.equalsIgnoreCase("quit")) {
-			
-			
+
 			System.out.print("$> ");
 			input = keyboard.nextLine().trim();
 			switch (input) {
@@ -45,23 +43,21 @@ public class PukaReduced {
 				case "quit": System.out.println("bye"); break;
 				default: printHelp();
 			}
-			
-			
 		}
 		keyboard.close();
 		Launcher.kill();
 	}
 	
-	
 	private static String parseArgs(String[] args) {
+		
 		
 		return "";
 	}
 	
 	private static void printHelp() {
 		System.out.println("puka test shell:\n\t"
-				+ "run: execute puka test\n\t"
-				+ "debug: toggles debug print from MATLAB\n\t"
+				+ "run: execute puka test (using signal.txt)\n\t"
+				+ "debug: toggles debug print from matlabcontrol\n\t"
 				+ "help: this\n\t"
 				+ "\n\tquit: close matlab and quit");
 	}

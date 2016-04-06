@@ -86,6 +86,8 @@ public class JMatLinkAdapter implements IJMatLink {
 	 * Get a variable from matlab workspace.
 	 */
 	public double engGetScalar(String arrayS) throws MatlabInvocationException  {
+		// TODO, add evalSTring("isscalar(arrayS)");
+		
 		double ret = ((double[]) proxy.getVariable(arrayS))[0]; // MATLAB always thinks in arrays, a scalar is a double-array with one element 
 		return (double) ret;
 	}	
@@ -111,7 +113,7 @@ public class JMatLinkAdapter implements IJMatLink {
 	 * Pro-guess, create an array with one element
 	 */
 	
-	public void engPutArray(String arrayS, double valueD) {
+	public void engPutArray(String arrayS, double valueD)  {
 		try {
 			proxy.setVariable(arrayS, valueD); 
 		} catch (MatlabInvocationException e) {

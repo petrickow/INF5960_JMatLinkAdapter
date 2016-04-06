@@ -50,7 +50,7 @@ public class Launcher {
 			
 			
 			/**
-			 * Step 3, calssify peaks -> this is done manually in puka, we need to find a way to automate this process
+			 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
 			 */
 			stepInfo("classify peaks");
 			classifyPeaks();
