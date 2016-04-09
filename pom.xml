@@ -23,12 +23,20 @@
 			<version>4.4.1</version>
 			<scope>compile</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.espertech</groupId>
+			<artifactId>esper</artifactId>
+			<version> 5.3.0 </version>
+		</dependency>
+
 	</dependencies>
   
   	<build>
@@ -42,7 +50,7 @@
 				<version>2.9</version>
 				<configuration>
 					<downloadSources>true</downloadSources>
-					<downloadJavadocs>false</downloadJavadocs>
+					<downloadJavadocs>true</downloadJavadocs>
 				</configuration>
 			</plugin>
 
@@ -61,12 +69,14 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>				  
+				<version>2.6</version>
+				<configuration>  
 				  	<archive>
 						<manifest>
+							<addClasspath>true</addClasspath>
 							<!-- Jar file entry point -->
-							<mainClass>no.uio.taco.pukaMatControl.puka.frmMain</mainClass>
-
+							<mainClass>no.uio.taco.pukaMatControl.pukaReduced.PukaReduced</mainClass>
+							<packageName>no.uio.taco.pukaMatControl</packageName>
 						</manifest>
 				  	</archive>
 				</configuration>

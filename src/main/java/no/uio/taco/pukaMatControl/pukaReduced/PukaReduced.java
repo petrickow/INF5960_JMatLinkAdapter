@@ -33,7 +33,7 @@ public class PukaReduced {
 			input = keyboard.nextLine().trim();
 			switch (input) {
 				case "debug": 
-					System.out.println("Debug = " + Launcher.toggleDebug());
+					System.out.println("setting Debug to: " + Launcher.toggleDebug());
 					break;
 				case "run": 
 					Launcher.clean(); //just in case we already have run it once 
@@ -41,6 +41,7 @@ public class PukaReduced {
 					break;
 				case "help": printHelp(); break;
 				case "quit": System.out.println("bye"); break;
+				case "pwd": System.out.println(System.getProperty("user.dir")); 
 				default: printHelp();
 			}
 		}
