@@ -20,7 +20,7 @@ public class Settings {
 	int intStartTime = 0;
 	
 	public Settings() {
-		scriptPath = System.getProperty("user.dir") + "\\lib\\command\\matlabScripts";
+		scriptPath = System.getProperty("user.dir") + "\\matlabScripts";
 		filename = System.getProperty("user.dir") + "\\signal.txt"; // default to signal.txt in root folder
 	}
 }
