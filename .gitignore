@@ -16,3 +16,6 @@ log/
 
 # Matlab
 *.asv
+
+# logs
+matlabctrlLog.txt
