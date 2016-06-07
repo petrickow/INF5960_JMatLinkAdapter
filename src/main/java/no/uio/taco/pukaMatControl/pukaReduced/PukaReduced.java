@@ -39,6 +39,7 @@ public class PukaReduced {
 					Launcher.clean(); //just in case we already have run it once 
 					Launcher.launch(fname); 
 					break;
+				case "stream": launchStream(); break;
 				case "help": printHelp(); break;
 				case "quit": System.out.println("bye"); break;
 				case "pwd": System.out.println(System.getProperty("user.dir")); 
@@ -55,6 +56,16 @@ public class PukaReduced {
 		return "";
 	}
 	
+	
+	private static void launchStream() {
+
+		System.out.println("Starting second thread");
+		Thread gobbler = new Thread(new StreamGobbler());
+		gobbler.start();
+		
+
+	}
+	
 	private static void printHelp() {
 		System.out.println("puka test shell:\n\t"
 				+ "run: execute puka test (using signal.txt)\n\t"
@@ -62,5 +73,4 @@ public class PukaReduced {
 				+ "help: this\n\t"
 				+ "\n\tquit: close matlab and quit");
 	}
-
 }
