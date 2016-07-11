@@ -125,7 +125,7 @@ public class Launcher {
 	private static void classifyPeaks() {
 		engMatLab.engEvalString("[peakLabels,troughLabels] = classifyPeaks(Qd,P,T,th);");
 		// we can select only the validated peaks and troughs? We'll see
-		// look in DoApply to see how changes are made... now peak/trough contains all: valid, invalid and qustinalambalfø
+		// look in DoApply to see how changes are made... now peak/trough contains all: valid, invalid and questionable
 	}
 	
 	private static void pauseDetection() {
