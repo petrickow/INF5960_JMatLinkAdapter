@@ -4,11 +4,17 @@ import java.util.Scanner;
 
 /**
  * Replication of the respiration analysis found in puka.
- * This program allow developers to quickly run the respiration analysis done with the 
+ * This program allow developers to quickly run the respiration analysis done with the
  * MATLAB scripts. The data is read from a one column text file.
  * @author 		Cato Danielsen
  * @version 	0.0.1
  *
+ * TODO: implement timing (http://stackoverflow.com/questions/180158/how-do-i-time-a-methods-execution-in-java):
+			long startTime = System.nanoTime();
+			methodToTime();
+			long endTime = System.nanoTime();
+
+			long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
  */
 public class PukaReduced {
 
@@ -17,55 +23,55 @@ public class PukaReduced {
 	        @Override
             public void run() {
         		System.out.println("\tGot terminated\n"
-        				+ "but does not hook when terminating in eclipse...");	
+        				+ "but does not hook when terminating in eclipse...");
     			//Launcher.kill();
-            }   
-        }); 
-		
+            }
+        });
+
 		String fname = parseArgs(args);
 		Scanner keyboard = new Scanner(System.in);
 		printHelp();
-		
-		String input = ""; 
+
+		String input = "";
 		while (!input.equalsIgnoreCase("quit")) {
 
 			System.out.print("$> ");
 			input = keyboard.nextLine().trim();
 			switch (input) {
-				case "debug": 
+				case "debug":
 					System.out.println("setting Debug to: " + Launcher.toggleDebug());
 					break;
-				case "run": 
-					Launcher.clean(); //just in case we already have run it once 
-					Launcher.launch(fname); 
+				case "run":
+					Launcher.clean(); //just in case we already have run it once
+					Launcher.launch(fname);
 					break;
 				case "stream": launchStream(); break;
 				case "help": printHelp(); break;
 				case "quit": System.out.println("bye"); break;
-				case "pwd": System.out.println(System.getProperty("user.dir")); 
+				case "pwd": System.out.println(System.getProperty("user.dir"));
 				default: printHelp();
 			}
 		}
 		keyboard.close();
 		Launcher.kill();
 	}
-	
+
 	private static String parseArgs(String[] args) {
-		
-		
+
+
 		return "";
 	}
-	
-	
+
+
 	private static void launchStream() {
 
 		System.out.println("Starting second thread");
 		Thread gobbler = new Thread(new StreamGobbler());
 		gobbler.start();
-		
+
 
 	}
-	
+
 	private static void printHelp() {
 		System.out.println("puka test shell:\n\t"
 				+ "run: execute puka test (using signal.txt)\n\t"
