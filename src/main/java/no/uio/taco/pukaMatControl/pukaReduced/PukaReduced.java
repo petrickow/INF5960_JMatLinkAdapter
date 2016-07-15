@@ -7,7 +7,7 @@ import java.util.Scanner;
  * This program allow developers to quickly run the respiration analysis done with the 
  * MATLAB scripts. The data is read from a one column text file.
  * @author 		Cato Danielsen
- * @version 	0.0.1
+ * @version 	0.0.3
  *
  */
 public class PukaReduced {

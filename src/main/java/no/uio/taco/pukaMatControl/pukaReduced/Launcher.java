@@ -144,7 +144,6 @@ public class Launcher {
 		engMatLab.setDebug(debug); // whenever we start, set debug according to user perferences
 	}
 	
-	
 	/**
 	 * Clean the launcher settings and step
 	 */
@@ -155,9 +154,9 @@ public class Launcher {
 			temp = settings.filename; // keep filename
 			settings = new Settings(); // clear all settings
 			settings.filename = temp;
-		} else {} // initial run, we  don't have to do anything, launch creates settingsrun
-		
-		 
+		} else {
+			// initial run, we  don't have to do anything, launch creates settingsrun
+		} 
 	}
 	
 	public static void kill() {
@@ -176,6 +175,7 @@ public class Launcher {
 	}
 	
 	private static void stepInfo(String s) {
-		System.out.println("\tStep "+step++ +": " + s + "\n\t========================================="); // todo: underline s.length
+		System.out.println("\tStep " + step++ + ": " + s + 
+				"\n\t========================================="); // todo: underline s.length
 	}
 }
