@@ -18,8 +18,6 @@ import java.nio.charset.Charset;
 
 public class StreamGobbler implements Runnable {
 
-	int port = 9043;
-
 	private synchronized void haltFor(long sec) {
 		try {
 			Thread.sleep(sec * 1000);
@@ -51,8 +49,9 @@ public class StreamGobbler implements Runnable {
 			channel.connect(new InetSocketAddress("localhost", port));
 
 			while (!channel.finishConnect()) {
-				// System.out.println("still connecting");
+				System.out.println("still connecting");
 			}
+			
 			while (true) {
 				// see if any message has been received
 				ByteBuffer bufferA = ByteBuffer.allocate(20);
@@ -68,11 +67,13 @@ public class StreamGobbler implements Runnable {
 				if (message.length() > 0) {
 					System.out.println(message);
 					// write some data into the channel
-					CharBuffer buffer = CharBuffer.wrap("400");
+					CharBuffer buffer = CharBuffer.wrap("signal.txt, 200");
 					while (buffer.hasRemaining()) {
 						channel.write(Charset.defaultCharset().encode(buffer));
 					}
 					message = "";
+					
+					receiveLoop(channel);
 				}
 
 			}
@@ -94,6 +95,35 @@ public class StreamGobbler implements Runnable {
 		 * e.printStackTrace(); }
 		 */
 
+	}
+
+	private void receiveLoop(SocketChannel channel) throws IOException {
+		ByteBuffer bufferA = ByteBuffer.allocate(100);
+		int count = 0;
+		
+		
+		while(true) {
+			
+			String message = "";
+
+			
+			while ((count = channel.read(bufferA)) > 0) {
+				// flip the buffer to start reading
+				bufferA.flip();
+				message += Charset.defaultCharset().decode(bufferA);
+			}
+
+			if (message.length() > 0) {
+				System.out.println("count: " + count++ + "msg: " +  message);
+			}
+			else {
+				// Nothing on the channel, why?
+				//System.out.println("Thats it?");
+			}
+			
+			bufferA.clear();
+		}
+		
 	}
 
 }
