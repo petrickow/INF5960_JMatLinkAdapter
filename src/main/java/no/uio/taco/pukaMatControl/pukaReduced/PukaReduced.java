@@ -1,6 +1,9 @@
 package no.uio.taco.pukaMatControl.pukaReduced;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.List;
 
 /**
  * Replication of the respiration analysis found in puka.
@@ -18,6 +21,10 @@ import java.util.Scanner;
  */
 public class PukaReduced {
 
+	
+	static List<String> sharedBuffer;
+	
+	
 	public static void main(String[] args) {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 	        @Override
@@ -64,9 +71,11 @@ public class PukaReduced {
 
 
 	private static void launchStream() {
-
-		System.out.println("Starting second thread");
-		Thread gobbler = new Thread(new StreamGobbler());
+		
+		sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
+		
+		System.out.println("Starting Gobbler thread");
+		Thread gobbler = new Thread(new StreamGobbler(sharedBuffer));
 		gobbler.start();
 
 

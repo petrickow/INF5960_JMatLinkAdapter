@@ -6,18 +6,19 @@
 
 package no.uio.taco.pukaMatControl.pukaReduced;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
+import java.util.List;
 
 public class StreamGobbler implements Runnable {
 
+	List<String> sharedBuffer;
+	
 	private synchronized void haltFor(long sec) {
 		try {
 			Thread.sleep(sec * 1000);
@@ -27,6 +28,10 @@ public class StreamGobbler implements Runnable {
 		}
 	}
 
+	
+	public StreamGobbler(List<String> sharedBuffer) {
+		this.sharedBuffer = sharedBuffer;
+	}
 	/*
 	 * This requires the DataFeeder application to be running on the same host
 	 * as it is running. We will connect using Network Channel from the Java NIO
@@ -51,16 +56,16 @@ public class StreamGobbler implements Runnable {
 			while (!channel.finishConnect()) {
 				System.out.println("still connecting");
 			}
-			
-			while (true) {
+			String message = "";
+			while (message.length() == 0) {
 				// see if any message has been received
-				ByteBuffer bufferA = ByteBuffer.allocate(20);
+				ByteBuffer receiveBuffer = ByteBuffer.allocate(20);
 				int count = 0;
-				String message = "";
-				while ((count = channel.read(bufferA)) > 0) {
+				
+				while ((count = channel.read(receiveBuffer)) > 0) {
 					// flip the buffer to start reading
-					bufferA.flip();
-					message += Charset.defaultCharset().decode(bufferA);
+					receiveBuffer.flip();
+					message += Charset.defaultCharset().decode(receiveBuffer);
 
 				}
 
@@ -98,22 +103,23 @@ public class StreamGobbler implements Runnable {
 	}
 
 	private void receiveLoop(SocketChannel channel) throws IOException {
-		ByteBuffer bufferA = ByteBuffer.allocate(100);
+		ByteBuffer receiveBuffer = ByteBuffer.allocate(100);
 		int count = 0;
-		
 		
 		while(true) {
 			
 			String message = "";
 
 			
-			while ((count = channel.read(bufferA)) > 0) {
+			while ((count = channel.read(receiveBuffer)) > 0) {
 				// flip the buffer to start reading
-				bufferA.flip();
-				message += Charset.defaultCharset().decode(bufferA);
+				receiveBuffer.flip();
+				message += Charset.defaultCharset().decode(receiveBuffer);
 			}
 
 			if (message.length() > 0) {
+				// store content in shared buffer.
+				
 				System.out.println("count: " + count++ + "msg: " +  message);
 			}
 			else {
@@ -121,7 +127,7 @@ public class StreamGobbler implements Runnable {
 				//System.out.println("Thats it?");
 			}
 			
-			bufferA.clear();
+			receiveBuffer.clear();
 		}
 		
 	}
