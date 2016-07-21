@@ -24,7 +24,6 @@ public class PukaReduced {
 	
 	static List<String> sharedBuffer;
 	
-	
 	public static void main(String[] args) {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 	        @Override
@@ -74,7 +73,7 @@ public class PukaReduced {
 		
 		sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
 		
-		System.out.println("Starting Gobbler thread");
+		//System.out.println("Starting Gobbler thread");
 		Thread gobbler = new Thread(new StreamGobbler(sharedBuffer));
 		gobbler.start();
 

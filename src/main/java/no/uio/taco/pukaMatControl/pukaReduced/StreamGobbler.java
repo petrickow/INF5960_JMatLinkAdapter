@@ -12,21 +12,17 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.util.LinkedList;
 import java.util.List;
 
 public class StreamGobbler implements Runnable {
 
-	List<String> sharedBuffer;
+	private List<String> sharedBuffer;
 	
-	private synchronized void haltFor(long sec) {
-		try {
-			Thread.sleep(sec * 1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+	private String fileName = "signals.txt";
+	private int port = 4444;
+
+	private ByteBuffer receiveBuffer = ByteBuffer.allocate(100);
+
 
 	
 	public StreamGobbler(List<String> sharedBuffer) {
@@ -43,100 +39,113 @@ public class StreamGobbler implements Runnable {
 	public void run() {
 
 		System.out.println("We now wait for connection to 'sensor'");
-		haltFor(2);
+		haltFor(1); // just to be able to read
 
+		SocketChannel channel; // connection to DataFeeder 
+		
 		try {
-			int port = 4444;
-			SocketChannel channel = SocketChannel.open();
-
-			// we open this channel in non blocking mode
-			channel.configureBlocking(false);
-			channel.connect(new InetSocketAddress("localhost", port));
-
-			while (!channel.finishConnect()) {
-				System.out.println("still connecting");
-			}
-			String message = "";
-			while (message.length() == 0) {
-				// see if any message has been received
-				ByteBuffer receiveBuffer = ByteBuffer.allocate(20);
-				int count = 0;
-				
-				while ((count = channel.read(receiveBuffer)) > 0) {
-					// flip the buffer to start reading
-					receiveBuffer.flip();
-					message += Charset.defaultCharset().decode(receiveBuffer);
-
-				}
-
-				if (message.length() > 0) {
-					System.out.println(message);
-					// write some data into the channel
-					CharBuffer buffer = CharBuffer.wrap("signal.txt, 200");
-					while (buffer.hasRemaining()) {
-						channel.write(Charset.defaultCharset().encode(buffer));
-					}
-					message = "";
-					
+			channel = intiateConnection();
+			
+			if (channel.isOpen()) {
+				String message = readFromChannel(channel);
+				if (sendAck(channel, message)) {
 					receiveLoop(channel);
 				}
-
 			}
-		} catch (Exception e) {
-			
+		} catch (IOException e) {
+			//TODO: check error and handle appropriate (most likely connection exception)
+			e.printStackTrace();
 		}
-
-		/*
-		 * Socket s = setupSocket(); if (s == null) { System.out.println(
-		 * "FAILED: setup socket"); System.exit(-1); }
-		 * 
-		 * BufferedReader in; try { in = new BufferedReader( new
-		 * InputStreamReader(s.getInputStream()));
-		 * 
-		 * 
-		 * String input = in.readLine(); while (!input.equals("quit")) {
-		 * System.out.println(input); input = in.readLine(); } } catch
-		 * (IOException e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); }
-		 */
-
 	}
 
-	private void receiveLoop(SocketChannel channel) throws IOException {
-		ByteBuffer receiveBuffer = ByteBuffer.allocate(100);
-		int count = 0;
-		
-		while(true) {
-			
-			String message = "";
+	private SocketChannel intiateConnection() throws IOException {
 
+		SocketChannel channel = SocketChannel.open();	
+
+		// we open this channel in non blocking mode
+		channel.configureBlocking(false);
+		channel.connect(new InetSocketAddress("localhost", port));
+
+		while (!channel.finishConnect()) {
+			System.out.println("still connecting");
+			haltFor(0.5);
+		}
+		
+		
+		return channel;
+	}
+
+
+	private String readFromChannel(SocketChannel channel) throws IOException {
+		String message = "";
+		while (message.length() == 0) {
 			
+			int count = 0;
 			while ((count = channel.read(receiveBuffer)) > 0) {
 				// flip the buffer to start reading
 				receiveBuffer.flip();
 				message += Charset.defaultCharset().decode(receiveBuffer);
 			}
-
-			if (message.length() > 0) {
-				// store content in shared buffer.
-				
-				System.out.println("count: " + count++ + "msg: " +  message);
-			}
-			else {
-				// Nothing on the channel, why?
-				//System.out.println("Thats it?");
-			}
-			
 			receiveBuffer.clear();
+			//System.out.println("Got " + count + " bytes message");
+		}
+		
+		return message;
+	}
+
+	/**
+	 * Respond to initiation with ack and filename
+	 * 
+	 * @param message response we got from the server
+	 * @return false if server has not respondend with 200, ergo nothing to ack
+	 */
+	private boolean sendAck(SocketChannel channel, String message) throws IOException {
+		if (message.endsWith("200")) {
+			//String[] split = message.split(","); // split and display connection status?
+			CharBuffer buffer = CharBuffer.wrap(fileName + ",200");
+			while (buffer.hasRemaining()) {
+				channel.write(Charset.defaultCharset().encode(buffer));
+			}
+			return true;
+		} else {
+			// different status code from server, abort
+			return false;
 		}
 		
 	}
 
+	/**
+	 * The main workhorse of the class
+	 * @param channel
+	 * @throws IOException
+	 */
+	private void receiveLoop(SocketChannel channel) throws IOException {
+		
+		
+		for(;;) {
+			String line = readFromChannel(channel);
+			if (line.endsWith(",400")) {
+				System.out.println("Error, file not found.\t'" + line + "'");
+				break;
+			}
+			
+			//TODO: init analysis
+		}
+		
+	}
+	
+	/**
+	 * Wait method for seconds
+	 * @param sec
+	 */
+	private synchronized void haltFor(double sec) {
+		try {
+			long ms = (long) sec * 1000;
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 }
-
-/*
- * public class Streamer{
- * 
- * }
- * 
- */
