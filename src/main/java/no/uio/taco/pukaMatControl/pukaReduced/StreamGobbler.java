@@ -25,13 +25,15 @@ public class StreamGobbler implements Runnable {
 	private int port = 4444;
 
 	private ByteBuffer receiveBuffer = ByteBuffer.allocate(100);
-
+	RespirationAnalyser respirationAnalyser; 
 
 	
-	public StreamGobbler(List<String> sharedBuffer) {
+	public StreamGobbler(List<String> sharedBuffer, RespirationAnalyser respirationAnalyser) {
 		log = Logger.getLogger(this.getClass());
 		BasicConfigurator.configure();
 		log.debug("init gobbler");
+		
+		this.respirationAnalyser = respirationAnalyser; 
 		this.sharedBuffer = sharedBuffer;
 	}
 	/*
@@ -47,7 +49,7 @@ public class StreamGobbler implements Runnable {
 		log.debug("We now wait for connection to 'sensor'");
 		haltFor(1); // just to be able to read
 
-		SocketChannel channel; // connection to DataFeeder 
+		SocketChannel channel; // connection to DataFeeder
 		
 		try {
 			channel = intiateConnection();
@@ -60,8 +62,6 @@ public class StreamGobbler implements Runnable {
 			}
 		} catch (IOException e) {
 			//TODO: check error and handle appropriate (most likely connection exception)
-			
-			
 			log.error(e.getMessage());
 			resetShell();
 		}
@@ -140,12 +140,16 @@ public class StreamGobbler implements Runnable {
 			
 			sharedBuffer.add(line);
 			//TODO: init analysis
+			if (sharedBuffer.size() == respirationAnalyser.getClipLength()) {
+				
+			}
 		}
 		
 	}
 	
 	
 	private void resetShell() {
+		// TODO: give shell control back to user after finished
 		System.out.print("$> ");
 	}
 	

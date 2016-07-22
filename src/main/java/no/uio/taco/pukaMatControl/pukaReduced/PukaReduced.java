@@ -22,8 +22,8 @@ import java.util.List;
  */
 public class PukaReduced {
 	
-	static List<String> sharedBuffer;
 	static List<Thread> runningThreads;
+	RespirationAnalyser respAnalyser; 
 	
 	public static void main(String[] args) {
 		
@@ -39,6 +39,7 @@ public class PukaReduced {
 		Scanner keyboard = new Scanner(System.in);
 		
 		RespirationAnalyser respAnalyser = new RespirationAnalyser();
+		List<String> sharedBuffer = Collections.synchronizedList(new LinkedList<String>());;
 		String input = "";
 		
 		printHelp();
@@ -55,7 +56,7 @@ public class PukaReduced {
 					String fname = input = keyboard.nextLine().trim();
 					respAnalyser.launchLocalFile(fname);
 					break;
-				case "stream": connectStreamServer(); break;
+				case "stream": Thread gobbler = new Thread(new StreamGobbler(sharedBuffer, respAnalyser)); gobbler.start(); break;
 				case "help": printHelp(); break;
 				case "quit": System.out.println("bye"); break;
 				case "pwd": System.out.println(System.getProperty("user.dir"));
@@ -64,17 +65,6 @@ public class PukaReduced {
 		}
 		keyboard.close();
 		respAnalyser.kill();
-	}
-
-	private static void connectStreamServer() {
-		
-		sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
-		
-		//System.out.println("Starting Gobbler thread");
-		Thread gobbler = new Thread(new StreamGobbler(sharedBuffer));
-		gobbler.start();
-
-
 	}
 
 	private static void printHelp() {

@@ -14,7 +14,7 @@ public class RespirationAnalyser {
 	private boolean debug = true;
 	private JMatLinkAdapter engMatLab = null; 
 	
-	private Settings settings;
+	public Settings settings;
 	private History history;
 	
 	/**
@@ -189,5 +189,9 @@ public class RespirationAnalyser {
 	private void stepInfo(String s) {
 		System.out.println("\tStep " + step++ + ": " + s + 
 				"\n\t========================================="); // todo: underline s.length
+	}
+	
+	public int getClipLength() {
+		return settings.clipLength;
 	}
 }
