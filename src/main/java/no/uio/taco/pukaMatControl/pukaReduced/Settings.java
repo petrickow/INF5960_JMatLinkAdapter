@@ -12,6 +12,7 @@ public class Settings {
 	
 	int sampleRate = 1000; 
 	
+	//int windowSize; 
 	int clipLength = 10 * sampleRate; // 10 sec at 1000 hz
 	
 	double dblStartTime = 0;  /** time point at which the stimulus started */

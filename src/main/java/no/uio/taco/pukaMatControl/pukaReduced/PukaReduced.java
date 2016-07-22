@@ -1,5 +1,6 @@
 package no.uio.taco.pukaMatControl.pukaReduced;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -20,38 +21,41 @@ import java.util.List;
 			long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
  */
 public class PukaReduced {
-
 	
 	static List<String> sharedBuffer;
+	static List<Thread> runningThreads;
 	
 	public static void main(String[] args) {
+		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 	        @Override
             public void run() {
-        		System.out.println("\tGot terminated\n"
-        				+ "but does not hook when terminating in eclipse...");
-    			//Launcher.kill();
+	        	System.out.println("Main shutting down");
+        		//TODO: cleanup
             }
         });
 
-		String fname = parseArgs(args);
+		runningThreads = new ArrayList<Thread>();
 		Scanner keyboard = new Scanner(System.in);
-		printHelp();
-
+		
+		RespirationAnalyser respAnalyser = new RespirationAnalyser();
 		String input = "";
+		
+		printHelp();
 		while (!input.equalsIgnoreCase("quit")) {
 
 			System.out.print("$> ");
 			input = keyboard.nextLine().trim();
 			switch (input) {
 				case "debug":
-					System.out.println("setting Debug to: " + Launcher.toggleDebug());
+					System.out.println("setting Debug to: " + respAnalyser.toggleDebug());
 					break;
 				case "run":
-					Launcher.clean(); //just in case we already have run it once
-					Launcher.launch(fname);
+					respAnalyser.clean(); //just in case we already have run previously
+					String fname = input = keyboard.nextLine().trim();
+					respAnalyser.launchLocalFile(fname);
 					break;
-				case "stream": launchStream(); break;
+				case "stream": connectStreamServer(); break;
 				case "help": printHelp(); break;
 				case "quit": System.out.println("bye"); break;
 				case "pwd": System.out.println(System.getProperty("user.dir"));
@@ -59,17 +63,10 @@ public class PukaReduced {
 			}
 		}
 		keyboard.close();
-		Launcher.kill();
+		respAnalyser.kill();
 	}
 
-	private static String parseArgs(String[] args) {
-
-
-		return "";
-	}
-
-
-	private static void launchStream() {
+	private static void connectStreamServer() {
 		
 		sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
 		

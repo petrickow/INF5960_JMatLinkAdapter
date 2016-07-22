@@ -6,6 +6,8 @@
 
 package no.uio.taco.pukaMatControl.pukaReduced;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.BasicConfigurator;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -16,9 +18,10 @@ import java.util.List;
 
 public class StreamGobbler implements Runnable {
 
+	private Logger log; 
 	private List<String> sharedBuffer;
 	
-	private String fileName = "signals.txt";
+	private String fileName = "signal.txt";
 	private int port = 4444;
 
 	private ByteBuffer receiveBuffer = ByteBuffer.allocate(100);
@@ -26,6 +29,9 @@ public class StreamGobbler implements Runnable {
 
 	
 	public StreamGobbler(List<String> sharedBuffer) {
+		log = Logger.getLogger(this.getClass());
+		BasicConfigurator.configure();
+		log.debug("init gobbler");
 		this.sharedBuffer = sharedBuffer;
 	}
 	/*
@@ -38,7 +44,7 @@ public class StreamGobbler implements Runnable {
 	@Override
 	public void run() {
 
-		System.out.println("We now wait for connection to 'sensor'");
+		log.debug("We now wait for connection to 'sensor'");
 		haltFor(1); // just to be able to read
 
 		SocketChannel channel; // connection to DataFeeder 
@@ -54,7 +60,10 @@ public class StreamGobbler implements Runnable {
 			}
 		} catch (IOException e) {
 			//TODO: check error and handle appropriate (most likely connection exception)
-			e.printStackTrace();
+			
+			
+			log.error(e.getMessage());
+			resetShell();
 		}
 	}
 
@@ -67,7 +76,7 @@ public class StreamGobbler implements Runnable {
 		channel.connect(new InetSocketAddress("localhost", port));
 
 		while (!channel.finishConnect()) {
-			System.out.println("still connecting");
+			log.info("still connecting");
 			haltFor(0.5);
 		}
 		
@@ -79,15 +88,12 @@ public class StreamGobbler implements Runnable {
 	private String readFromChannel(SocketChannel channel) throws IOException {
 		String message = "";
 		while (message.length() == 0) {
-			
-			int count = 0;
-			while ((count = channel.read(receiveBuffer)) > 0) {
+			while (channel.read(receiveBuffer) > 0) {
 				// flip the buffer to start reading
 				receiveBuffer.flip();
 				message += Charset.defaultCharset().decode(receiveBuffer);
 			}
 			receiveBuffer.clear();
-			//System.out.println("Got " + count + " bytes message");
 		}
 		
 		return message;
@@ -101,37 +107,46 @@ public class StreamGobbler implements Runnable {
 	 */
 	private boolean sendAck(SocketChannel channel, String message) throws IOException {
 		if (message.endsWith("200")) {
-			//String[] split = message.split(","); // split and display connection status?
+			// String[] split = message.split(","); // split and display connection status?
+			
 			CharBuffer buffer = CharBuffer.wrap(fileName + ",200");
+			
 			while (buffer.hasRemaining()) {
 				channel.write(Charset.defaultCharset().encode(buffer));
 			}
 			return true;
 		} else {
 			// different status code from server, abort
+			log.error(message);
 			return false;
 		}
 		
 	}
 
 	/**
-	 * The main workhorse of the class
+	 * The main workhorse of the class TODO: remove throw and handle abrupt disconnect
 	 * @param channel
 	 * @throws IOException
 	 */
 	private void receiveLoop(SocketChannel channel) throws IOException {
-		
-		
 		for(;;) {
 			String line = readFromChannel(channel);
+			
 			if (line.endsWith(",400")) {
-				System.out.println("Error, file not found.\t'" + line + "'");
+				log.error(line);
+				resetShell();
 				break;
 			}
 			
+			sharedBuffer.add(line);
 			//TODO: init analysis
 		}
 		
+	}
+	
+	
+	private void resetShell() {
+		System.out.print("$> ");
 	}
 	
 	/**
