@@ -7,8 +7,8 @@ package no.uio.taco.pukaMatControl.pukaReduced;
  *
  */
 public class Settings {
-	String filename;
-	String scriptPath;
+	public String filename;
+	public String scriptPath;
 	
 	int sampleRate = 1000; 
 	
@@ -21,7 +21,12 @@ public class Settings {
 	int intStartTime = 0;
 	
 	public Settings() {
+		System.out.println("Creating settings object");
 		scriptPath = System.getProperty("user.dir") + "\\matlabScripts";
 		filename = System.getProperty("user.dir") + "\\signal.txt"; // default to signal.txt in root folder
+	}
+	
+	public String toString() {
+		return this.toString();
 	}
 }

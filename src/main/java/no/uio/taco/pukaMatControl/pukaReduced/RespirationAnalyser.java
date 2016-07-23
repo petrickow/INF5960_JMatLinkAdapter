@@ -1,6 +1,10 @@
 package no.uio.taco.pukaMatControl.pukaReduced;
 
 import java.io.File;
+
+//import org.apache.log4j.BasicConfigurator;
+//import org.apache.log4j.Logger;
+
 import matlabcontrol.MatlabInvocationException;
 import no.uio.taco.pukaMatControl.matControlAdapter.JMatLinkAdapter;
 
@@ -14,8 +18,21 @@ public class RespirationAnalyser {
 	private boolean debug = true;
 	private JMatLinkAdapter engMatLab = null; 
 	
-	public Settings settings;
+	private Settings settings;
 	private History history;
+	
+	//private Logger log; 
+	
+	
+	public RespirationAnalyser() {
+		//log = Logger.getLogger(this.getClass());
+		//BasicConfigurator.configure();
+		//log.setAdditivity(false);
+
+		
+		settings = new Settings(); // contains all variables for this analysis
+		history = new History();
+	}
 	
 	/**
 	 * Launches a recreation of pukas respiration analysis
@@ -24,35 +41,71 @@ public class RespirationAnalyser {
 	 * @param fname - name of signal file
 	 */
 	public void launchLocalFile(String fname) {
-		settings = new Settings(); // contains all variables for this analysis
-		history = new History();
-
+		
 		// 1: Get data if specified 
 		if (fname.length() > 0) {
 			settings.filename = System.getProperty("user.dir") + "\\" + fname; // no fault handeling
 		}
-		
+
 		File textDataFile = new File(settings.filename);
-		System.out.println("Signal file:\t" + settings.filename + "\n============\texists: " + textDataFile.exists()); 
+		//log.debug("Signal file:\t" + settings.filename + "\n============\texists: " + textDataFile.exists()); 
 		
 		if (textDataFile.exists()) {
 			startMatlab();
+			
 			/**
 			 * Step 1, load data, set start and end time
 			 */
 			stepInfo("load data, set start and end time");
 			loadFile(textDataFile);
-			setOnset();
-			
+			setOnset(); // TODO, should this be in here or in analyseResp()?	
 			analyseResp();
+		} else {
+			
 		}
 	}
-
+	
+	/**
+	 * Fetches clip size from shared buffer and analyzes the window
+	 *  
+	 */
+	public void launchSharedBuffer() {
+		
+		
+		/**
+		 * Step 1, load data, set start and end time
+		 */
+		stepInfo("load data, set start and end time");
+		setOnset(); // TODO, should this be in here or in analyseResp()?	
+		analyseResp();
+		
+	}
+	
+	
+	/**
+	 * Load a local file to be used in the respiration analysis. This method assumes
+	 * the file is consistent with the raw data format described in the puka manual.
+	 * It also assumes that we only have one signal present in the file
+	 * @param f - file descriptor for the desired signal file.
+	 */
+	private void loadFile(File f) {
+		engMatLab.engEvalString("clear;");  // remove all previous information in workspace, if any
+		engMatLab.engEvalString("data1 = load('" + f.getPath() + "');");  // load data file
+		engMatLab.engEvalString("y = data1(:, 1);");  // get trigger col into y in matlab
+		
+		//log.debug("Change MATLAB folder to script path: " + settings.scriptPath);
+		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
+		
+		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
+	}
+	
 	/**
 	 * Initiate respiration analysis. MATLAB session has to be running,
-	 * 
 	 */
 	private void analyseResp() {
+		
+		
+		
 		
 		/**
 		 * Step 2, peak detection, find peaks and trough 
@@ -91,13 +144,14 @@ public class RespirationAnalyser {
 			dblTemp = engMatLab.engGetScalar("onsetTime");  //get the stimulus onset time point
 		}
 		catch (MatlabInvocationException e) {
-			System.out.println("Error during getScalar");
+			//log.error("Error during getScalar. Unable to retrieve onset time from MATLAB");
 			e.printStackTrace();
 			System.exit(1); // TODO: better error handling
 		}
 		//if findOnset returns a time of -1 then it was unable to locate a good onset time
+		
 		if ((int)dblTemp < 0) { 
-			System.out.println("not able to get a good onset!");  
+			//log.error("not able to get a good onset!");  
 			// TODO: what to do?
 			System.exit(1);
 		}  
@@ -109,17 +163,11 @@ public class RespirationAnalyser {
 		}
 	}
 	
-	private void loadFile(File f) {
-		engMatLab.engEvalString("clear;");  // remove all previous information in workspace, if any
-		engMatLab.engEvalString("data1 = load('" + f.getPath() + "');");  // load data file
-		engMatLab.engEvalString("y = data1(:, 1);");  // get trigger col into y in matlab
-		
-		System.out.println("Change MATLAB folder to script path: " + settings.scriptPath);
-		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
-		
-		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
-	}
-	
+	/**
+	 * Run the MATLAB-script newPT, which finds all peaks and troughs
+	 * in a given signal.
+	 * The signal has to be pre-loaded into the MATLAB engine instance 
+	 */
 	private void peakDetection() {
 		/* already done 
 		//frmLoadData.engMatLab.engEvalString("y = data1(:, 1);"); // get the column HARDCODED 
@@ -134,12 +182,22 @@ public class RespirationAnalyser {
 		engMatLab.engEvalString("[P,T,th,Qd] = newPT(y, .1, onsetTime, endTime)");
 	}
 	
+	
+	/**
+	 * Runs pukas classify peaks script, which labels all peaks and troughs found with
+	 * 1,2 or 3 (index in peaksLabel corresponds to P, throughLabels to T) <- see peakDetection.
+	 */
 	private void classifyPeaks() {
 		engMatLab.engEvalString("[peakLabels,troughLabels] = classifyPeaks(Qd,P,T,th);");
 		// we can select only the validated peaks and troughs? We'll see
 		// look in DoApply to see how changes are made... now peak/trough contains all: valid, invalid and questionable
 	}
 	
+	/**
+	 * This script is dependent upon validating the peaks and trough found.
+	 * In puka, this validation is done by the user. If we are to improve the validation
+	 * process, this is where we do it.
+	 */
 	private void pauseDetection() {
 		engMatLab.engEvalString("[validPeaks, validTroughs] = makeValidArrays(P,T,peakLabels, troughLabels);"); // we use the peak/troughLabels for now, no changes
 		
@@ -148,12 +206,17 @@ public class RespirationAnalyser {
 		engMatLab.engEvalString("plotPauses(Qd, validPeaks, validTroughs, th, newP, newT);");
 	}
 	
+
+	/**
+	 * Creates a new instance of JMatLinkAdapter and opens a connection. If an existing connection
+	 * exists, this will reset the MATLAB engine.
+	 */
 	private void startMatlab() {
 		if (engMatLab == null) {
 			engMatLab = new JMatLinkAdapter();
 		}
 		engMatLab.engOpen(); // this resets if we already have a connection
-		engMatLab.setDebug(debug); // whenever we start, set debug according to user perferences
+		engMatLab.setDebug(debug); // whenever we start, set debug according to user preferences
 	}
 	
 	/**
@@ -171,12 +234,19 @@ public class RespirationAnalyser {
 		} 
 	}
 	
+	/**
+	 * Destroy and close the MATLAB instance if it exists.
+	 */
 	public void kill() {
 		if (engMatLab != null) {
 			engMatLab.kill();
 		}
 	}
 
+	/**
+	 * Let the user toggle debug for the JMatLinkAdaper connection to MATLAB
+	 * @return the new value, true if debug is set.
+	 */
 	public boolean toggleDebug() {
 		
 		if (engMatLab != null) {
@@ -185,12 +255,22 @@ public class RespirationAnalyser {
 		debug = !debug;
 		return debug;
 	}
-	
+		
+	/**
+	 * Util method for printing debug information about which step in the respiration analysis
+	 * we are in
+	 * @param s - information about the step
+	 */
 	private void stepInfo(String s) {
 		System.out.println("\tStep " + step++ + ": " + s + 
 				"\n\t========================================="); // todo: underline s.length
 	}
 	
+	/**
+	 * Expose the clip length. This is also used as window size and need to be available for
+	 * the stream gobbler class
+	 * @return clip/window size
+	 */
 	public int getClipLength() {
 		return settings.clipLength;
 	}

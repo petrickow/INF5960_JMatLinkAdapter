@@ -39,7 +39,7 @@ public class PukaReduced {
 		Scanner keyboard = new Scanner(System.in);
 		
 		RespirationAnalyser respAnalyser = new RespirationAnalyser();
-		List<String> sharedBuffer = Collections.synchronizedList(new LinkedList<String>());;
+		List<String> sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
 		String input = "";
 		
 		printHelp();
@@ -53,7 +53,8 @@ public class PukaReduced {
 					break;
 				case "run":
 					respAnalyser.clean(); //just in case we already have run previously
-					String fname = input = keyboard.nextLine().trim();
+					String fname = "signal.txt"; // TODO: get available files, print and let user choose
+					System.out.println(fname); 
 					respAnalyser.launchLocalFile(fname);
 					break;
 				case "stream": Thread gobbler = new Thread(new StreamGobbler(sharedBuffer, respAnalyser)); gobbler.start(); break;

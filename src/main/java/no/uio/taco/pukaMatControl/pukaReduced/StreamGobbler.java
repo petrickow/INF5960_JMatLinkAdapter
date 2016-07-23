@@ -14,6 +14,8 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 public class StreamGobbler implements Runnable {
@@ -31,6 +33,7 @@ public class StreamGobbler implements Runnable {
 	public StreamGobbler(List<String> sharedBuffer, RespirationAnalyser respirationAnalyser) {
 		log = Logger.getLogger(this.getClass());
 		BasicConfigurator.configure();
+		
 		log.debug("init gobbler");
 		
 		this.respirationAnalyser = respirationAnalyser; 
@@ -67,6 +70,39 @@ public class StreamGobbler implements Runnable {
 		}
 	}
 
+	/**
+	 * The main workhorse of the class TODO: remove throw and handle abrupt disconnect
+	 * @param channel
+	 * @throws IOException
+	 */
+	private void receiveLoop(SocketChannel channel) throws IOException {
+		long startTime = 0;
+		long endTime = 0; 
+		for(;;) {
+			String line = readFromChannel(channel);
+			
+			if (line.endsWith(",400")) {
+				log.error(line);
+				resetShell();
+				break;
+			}
+			
+			sharedBuffer.add(line);
+			//TODO: init analysis
+			if (sharedBuffer.size() == respirationAnalyser.getClipLength()) {
+				/*Used for testing timing
+				endTime = System.currentTimeMillis();
+				if (startTime != 0) { log.info("Time (seconds): " + (endTime-startTime)/1000); }
+	
+				log.info("window size: " + respirationAnalyser.getClipLength());
+				log.info("start analysis on " + sharedBuffer.size());
+				sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
+	        	startTime = System.currentTimeMillis();*/
+			}
+		}
+	}
+	
+	
 	private SocketChannel intiateConnection() throws IOException {
 
 		SocketChannel channel = SocketChannel.open();	
@@ -109,7 +145,7 @@ public class StreamGobbler implements Runnable {
 		if (message.endsWith("200")) {
 			// String[] split = message.split(","); // split and display connection status?
 			
-			CharBuffer buffer = CharBuffer.wrap(fileName + ",200");
+			CharBuffer buffer = CharBuffer.wrap(fileName + ",REQ");
 			
 			while (buffer.hasRemaining()) {
 				channel.write(Charset.defaultCharset().encode(buffer));
@@ -123,29 +159,7 @@ public class StreamGobbler implements Runnable {
 		
 	}
 
-	/**
-	 * The main workhorse of the class TODO: remove throw and handle abrupt disconnect
-	 * @param channel
-	 * @throws IOException
-	 */
-	private void receiveLoop(SocketChannel channel) throws IOException {
-		for(;;) {
-			String line = readFromChannel(channel);
-			
-			if (line.endsWith(",400")) {
-				log.error(line);
-				resetShell();
-				break;
-			}
-			
-			sharedBuffer.add(line);
-			//TODO: init analysis
-			if (sharedBuffer.size() == respirationAnalyser.getClipLength()) {
-				
-			}
-		}
-		
-	}
+
 	
 	
 	private void resetShell() {
