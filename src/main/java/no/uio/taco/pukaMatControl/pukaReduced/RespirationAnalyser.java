@@ -28,8 +28,6 @@ public class RespirationAnalyser {
 		//log = Logger.getLogger(this.getClass());
 		//BasicConfigurator.configure();
 		//log.setAdditivity(false);
-
-		
 		settings = new Settings(); // contains all variables for this analysis
 		history = new History();
 	}
@@ -67,14 +65,17 @@ public class RespirationAnalyser {
 	
 	/**
 	 * Fetches clip size from shared buffer and analyzes the window
-	 *  
 	 */
-	public void launchSharedBuffer() {
+	public void launchOnlineAnalysis() {
+		startMatlab();
+	}
 		
-		
+	
+	public void analyseWindow() {
 		/**
 		 * Step 1, load data, set start and end time
 		 */
+	
 		stepInfo("load data, set start and end time");
 		setOnset(); // TODO, should this be in here or in analyseResp()?	
 		analyseResp();

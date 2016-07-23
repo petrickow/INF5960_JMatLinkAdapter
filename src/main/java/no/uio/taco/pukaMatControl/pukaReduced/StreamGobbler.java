@@ -36,10 +36,12 @@ public class StreamGobbler implements Runnable {
 		
 		log.debug("init gobbler");
 		
-		this.respirationAnalyser = respirationAnalyser; 
+		this.respirationAnalyser = respirationAnalyser;
+		respirationAnalyser.launchOnlineAnalysis();
+		//respirationAnalyser.
 		this.sharedBuffer = sharedBuffer;
 	}
-	/*
+	/**
 	 * This requires the DataFeeder application to be running on the same host
 	 * as it is running. We will connect using Network Channel from the Java NIO
 	 * package
@@ -90,13 +92,15 @@ public class StreamGobbler implements Runnable {
 			sharedBuffer.add(line);
 			//TODO: init analysis
 			if (sharedBuffer.size() == respirationAnalyser.getClipLength()) {
+				sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
+				//respirationAnalyser.analyseWindow(); // separate thread due to the incomming traffic..
 				/*Used for testing timing
 				endTime = System.currentTimeMillis();
 				if (startTime != 0) { log.info("Time (seconds): " + (endTime-startTime)/1000); }
 	
 				log.info("window size: " + respirationAnalyser.getClipLength());
 				log.info("start analysis on " + sharedBuffer.size());
-				sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
+				
 	        	startTime = System.currentTimeMillis();*/
 			}
 		}
