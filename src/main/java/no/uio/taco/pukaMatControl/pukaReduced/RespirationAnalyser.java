@@ -51,14 +51,42 @@ public class RespirationAnalyser {
 		
 		if (textDataFile.exists()) {
 			startMatlab();
-			
+			step = 1;
 			/**
 			 * Step 1, load data, set start and end time
 			 */
 			stepInfo("load data, set start and end time");
 			loadFile(textDataFile);
 			setOnset(); // TODO, should this be in here or in analyseResp()?	
-			analyseResp();
+
+			/**
+			 * Step 2, peak detection, find peaks and trough 
+			 */
+			stepInfo("peak detection");
+			peakDetection();
+			
+			
+			/**
+			 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
+			 */
+			stepInfo("classify peaks");
+			classifyPeaks();
+			
+			/**
+			 * Step 4,
+			 */
+			stepInfo("pause detection:\n\t"
+					+ "Uses matlab again to detect the start and end point of the pause around the peak");
+			pauseDetection();
+			
+			
+			/**
+			 * Step 5, statistical calculation 
+			 */
+			stepInfo("statistical calculation:\n\t"
+					+ "This step looks at the information gathered in the current clip, and has\n\t"
+					+ "to be modified in order to be used in a meaningful way for realtime analysis.\n\t"
+					+ "Look into how to extract the events");
 		} else {
 			
 		}
@@ -73,15 +101,17 @@ public class RespirationAnalyser {
 		
 	
 	public void analyseWindow(List<String> buffer) {
+		
 		/**
 		 * Step 1, load data, set start and end time
 		 */
+		step = 1;
 		engMatLab.engEvalString("clear;");  // remove all previous information in workspace, if any
 		System.out.println(buffer.size());
-		double[] data1 = new double[buffer.size()];
+		double[][] data1 = new double[1][buffer.size()];
 		
 		for (int index = 0; index < buffer.size(); index++) {
-			data1[index] = Double.parseDouble(buffer.get(index));
+			data1[0][index] = Double.parseDouble(buffer.get(index));
 		}
 		engMatLab.engPutArray("data1", data1); // load record 
 		//engMatLab.engEvalString("data1 = load('" + f.getPath() + "');");  // load data file
@@ -123,9 +153,6 @@ public class RespirationAnalyser {
 	 */
 	private void analyseResp() {
 		
-		
-		
-		
 		/**
 		 * Step 2, peak detection, find peaks and trough 
 		 */
@@ -145,15 +172,6 @@ public class RespirationAnalyser {
 		stepInfo("pause detection:\n\t"
 				+ "Uses matlab again to detect the start and end point of the pause around the peak");
 		pauseDetection();
-		
-		
-		/**
-		 * Step 5, statistical calculation 
-		 */
-		stepInfo("statistical calculation:\n\t"
-				+ "This step looks at the information gathered in the current clip, and has\n\t"
-				+ "to be modified in order to be used in a meaningful way for realtime analysis.\n\t"
-				+ "Look into how to extract the events");
 	}
 	
 	private void setOnset() {
@@ -194,6 +212,7 @@ public class RespirationAnalyser {
 		//int startTime = frmLoadData.getStartTime(); 
 		//int stopTime = frmLoadData.getStopTime();
 		*/
+		System.out.println("SEttings: startTime: "+ settings.intStartTime + " and stopTime: "+ settings.intStopTime);
 		engMatLab.engEvalString("y = y(" + settings.intStartTime + ":" + settings.intStopTime + ");"); // trim y? TODO: document error in puka? this was startTime, stopTime... resulting in y = scalar...
 		//engMatLab.engEvalString("plot(y, 'm');");  //show the respiration signal so can check it
 		

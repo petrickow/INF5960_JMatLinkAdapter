@@ -99,7 +99,7 @@ public class StreamGobbler implements Runnable {
 			sharedBuffer.addAll(splitLine);
 			//timestamps.add(TODO: implicit time stamps?)
 
-			if (sharedBuffer.size() == respirationAnalyser.getClipLength()) {
+			if (sharedBuffer.size() == respirationAnalyser.getClipLength()+2000) {
 				log.info("anaysis initated");
 				respirationAnalyser.analyseWindow(sharedBuffer);
 				sharedBuffer = Collections.synchronizedList(new LinkedList<String>());

@@ -123,6 +123,7 @@ public class JMatLinkAdapter implements IJMatLink {
 
 	public void engPutArray(String arrayS, double[] valueD) {
 		try {
+			// we expect [1][valD.length], but get [valD.len][1]
 			proxy.setVariable(arrayS, valueD); // this has to be tested.
 		} catch (MatlabInvocationException e) {
 			e.printStackTrace();
