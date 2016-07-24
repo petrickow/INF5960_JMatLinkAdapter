@@ -1,6 +1,7 @@
 package no.uio.taco.pukaMatControl.pukaReduced;
 
 import java.io.File;
+import java.util.List;
 
 //import org.apache.log4j.BasicConfigurator;
 //import org.apache.log4j.Logger;
@@ -71,13 +72,30 @@ public class RespirationAnalyser {
 	}
 		
 	
-	public void analyseWindow() {
+	public void analyseWindow(List<String> buffer) {
 		/**
 		 * Step 1, load data, set start and end time
 		 */
+		engMatLab.engEvalString("clear;");  // remove all previous information in workspace, if any
+		System.out.println(buffer.size());
+		double[] data1 = new double[buffer.size()];
+		
+		for (int index = 0; index < buffer.size(); index++) {
+			data1[index] = Double.parseDouble(buffer.get(index));
+		}
+		engMatLab.engPutArray("data1", data1); // load record 
+		//engMatLab.engEvalString("data1 = load('" + f.getPath() + "');");  // load data file
+		engMatLab.engEvalString("y = data1(1, :);");  // get trigger col into y in matlab
+		
+		//log.debug("Change MATLAB folder to script path: " + settings.scriptPath);
+		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
+		
+		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
 	
 		stepInfo("load data, set start and end time");
 		setOnset(); // TODO, should this be in here or in analyseResp()?	
+		
+		
 		analyseResp();
 		
 	}

@@ -39,7 +39,7 @@ public class PukaReduced {
 		Scanner keyboard = new Scanner(System.in);
 		
 		RespirationAnalyser respAnalyser = new RespirationAnalyser();
-		List<String> sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
+		//List<String> sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
 		String input = "";
 		
 		printHelp();
@@ -57,7 +57,7 @@ public class PukaReduced {
 					System.out.println(fname); 
 					respAnalyser.launchLocalFile(fname);
 					break;
-				case "stream": Thread gobbler = new Thread(new StreamGobbler(sharedBuffer, respAnalyser)); gobbler.start(); break;
+				case "stream": Thread gobbler = new Thread(new StreamGobbler(respAnalyser)); gobbler.start(); break;
 				case "help": printHelp(); break;
 				case "quit": System.out.println("bye"); break;
 				case "pwd": System.out.println(System.getProperty("user.dir"));

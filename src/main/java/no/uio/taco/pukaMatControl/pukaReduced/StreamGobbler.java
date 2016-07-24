@@ -14,6 +14,9 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,15 +25,16 @@ public class StreamGobbler implements Runnable {
 
 	private Logger log; 
 	private List<String> sharedBuffer;
+	private List<Double> timeStamps;
 	
 	private String fileName = "signal.txt";
 	private int port = 4444;
 
 	private ByteBuffer receiveBuffer = ByteBuffer.allocate(100);
 	RespirationAnalyser respirationAnalyser; 
-
+	int count;
 	
-	public StreamGobbler(List<String> sharedBuffer, RespirationAnalyser respirationAnalyser) {
+	public StreamGobbler(RespirationAnalyser respirationAnalyser) {
 		log = Logger.getLogger(this.getClass());
 		BasicConfigurator.configure();
 		
@@ -38,8 +42,8 @@ public class StreamGobbler implements Runnable {
 		
 		this.respirationAnalyser = respirationAnalyser;
 		respirationAnalyser.launchOnlineAnalysis();
-		//respirationAnalyser.
-		this.sharedBuffer = sharedBuffer;
+		
+		this.sharedBuffer = Collections.synchronizedList(new LinkedList<String>());;
 	}
 	/**
 	 * This requires the DataFeeder application to be running on the same host
@@ -67,7 +71,6 @@ public class StreamGobbler implements Runnable {
 			}
 		} catch (IOException e) {
 			//TODO: check error and handle appropriate (most likely connection exception)
-			log.error(e.getMessage());
 			resetShell();
 		}
 	}
@@ -81,18 +84,26 @@ public class StreamGobbler implements Runnable {
 		long startTime = 0;
 		long endTime = 0; 
 		for(;;) {
+			
 			String line = readFromChannel(channel);
 			
+			count++;
 			if (line.endsWith(",400")) {
 				log.error(line);
 				resetShell();
 				break;
 			}
 			
-			sharedBuffer.add(line);
-			//TODO: init analysis
+			/* Need to double check that we only have one entry pr line */
+			Collection<String> splitLine = checkResult(line);
+			sharedBuffer.addAll(splitLine);
+			//timestamps.add(TODO: implicit time stamps?)
+
 			if (sharedBuffer.size() == respirationAnalyser.getClipLength()) {
+				log.info("anaysis initated");
+				respirationAnalyser.analyseWindow(sharedBuffer);
 				sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
+				timeStamps = Collections.synchronizedList(new LinkedList<Double>());
 				//respirationAnalyser.analyseWindow(); // separate thread due to the incomming traffic..
 				/*Used for testing timing
 				endTime = System.currentTimeMillis();
@@ -106,9 +117,22 @@ public class StreamGobbler implements Runnable {
 		}
 	}
 	
-	
+	/**
+	 * Extra me 
+	 * @param line
+	 * @return
+	 */
+	private Collection<String> checkResult(String line) {
+		String[] split = line.split(";");
+		return Arrays.asList(split);
+	}
+	/**
+	 * Create a socket channel 
+	 * @return
+	 * @throws IOException
+	 */
 	private SocketChannel intiateConnection() throws IOException {
-
+		count = 0;
 		SocketChannel channel = SocketChannel.open();	
 
 		// we open this channel in non blocking mode
@@ -116,15 +140,18 @@ public class StreamGobbler implements Runnable {
 		channel.connect(new InetSocketAddress("localhost", port));
 
 		while (!channel.finishConnect()) {
-			log.info("still connecting");
+			//log.info("still connecting");
 			haltFor(0.5);
 		}
-		
-		
 		return channel;
 	}
 
-
+	/**
+	 * Read from the passed channel and return as string
+	 * @param channel
+	 * @return the content sent via channel
+	 * @throws IOException
+	 */
 	private String readFromChannel(SocketChannel channel) throws IOException {
 		String message = "";
 		while (message.length() == 0) {
@@ -160,12 +187,11 @@ public class StreamGobbler implements Runnable {
 			log.error(message);
 			return false;
 		}
-		
 	}
 
-
-	
-	
+	/**
+	 * Print new prompt to indicate the shell is ready for new input
+	 */
 	private void resetShell() {
 		// TODO: give shell control back to user after finished
 		System.out.print("$> ");
