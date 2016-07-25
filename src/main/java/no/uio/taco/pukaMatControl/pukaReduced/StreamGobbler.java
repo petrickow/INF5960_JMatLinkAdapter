@@ -30,7 +30,7 @@ public class StreamGobbler implements Runnable {
 	private String fileName = "signal.txt";
 	private int port = 4444;
 
-	private ByteBuffer receiveBuffer = ByteBuffer.allocate(100);
+	private ByteBuffer receiveBuffer = ByteBuffer.allocate(20);
 	RespirationAnalyser respirationAnalyser; 
 	int count;
 	
@@ -43,7 +43,7 @@ public class StreamGobbler implements Runnable {
 		this.respirationAnalyser = respirationAnalyser;
 		respirationAnalyser.launchOnlineAnalysis();
 		
-		this.sharedBuffer = Collections.synchronizedList(new LinkedList<String>());;
+		this.sharedBuffer = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));;
 	}
 	/**
 	 * This requires the DataFeeder application to be running on the same host
@@ -81,8 +81,8 @@ public class StreamGobbler implements Runnable {
 	 * @throws IOException
 	 */
 	private void receiveLoop(SocketChannel channel) throws IOException {
-		long startTime = 0;
-		long endTime = 0; 
+		//long startTime = System.currentTimeMillis();
+		//long endTime = 0; 
 		for(;;) {
 			
 			String line = readFromChannel(channel);
@@ -102,8 +102,8 @@ public class StreamGobbler implements Runnable {
 			if (sharedBuffer.size() == respirationAnalyser.getClipLength()+2000) {
 				log.info("anaysis initated");
 				respirationAnalyser.analyseWindow(sharedBuffer);
-				sharedBuffer = Collections.synchronizedList(new LinkedList<String>());
-				timeStamps = Collections.synchronizedList(new LinkedList<Double>());
+				sharedBuffer = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));
+				timeStamps = Collections.synchronizedList(new ArrayList<Double>(respirationAnalyser.getClipLength()));
 				//respirationAnalyser.analyseWindow(); // separate thread due to the incomming traffic..
 				/*Used for testing timing
 				endTime = System.currentTimeMillis();
@@ -151,7 +151,7 @@ public class StreamGobbler implements Runnable {
 		}
 		return channel;
 	}
-// TODO: Change to read each value... parse the incomming string and pass back either on or multiple
+// TODO: Change to read each value... parse the incoming string and pass back either on or multiple
 // entries, but make sure to keep any information not used
 	/**
 	 * Read from the passed channel and return as string

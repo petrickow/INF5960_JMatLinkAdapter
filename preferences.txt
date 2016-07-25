@@ -8,17 +8,15 @@ SignalGain|2000
 ADCResolution|16
 ADCZero|0
 Length|0:10:12
-ClipName|Respiration : 10 min 12 sec
-ClipName|Ideal Test : 10 sec
-ClipName|test
 ClipName|1000hz 10 sec test
-ClipLength|61248
-ClipLength|1000
-ClipLength|3000
+ClipName|1000hz 1 sec test
+ClipName|1000hz 5 sec test
 ClipLength|10000
+ClipLength|1000
+ClipLength|5000
 ColEKG|-1
 ColRespiration|1
 ColTrigger|1
-dbname|newTest
-dbname|subjectData
 dbname|EduardoMovies
+dbname|subjectData
+dbname|newTest
