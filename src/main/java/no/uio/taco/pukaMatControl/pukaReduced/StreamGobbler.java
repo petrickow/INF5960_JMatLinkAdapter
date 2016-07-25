@@ -124,6 +124,12 @@ public class StreamGobbler implements Runnable {
 	 */
 	private Collection<String> checkResult(String line) {
 		String[] split = line.split(";");
+		if (split.length > 1) {
+			for (String s : split) {
+				System.out.println("\tx: '" + s + "'");
+			}
+			
+		}
 		return Arrays.asList(split);
 	}
 	/**
@@ -145,7 +151,8 @@ public class StreamGobbler implements Runnable {
 		}
 		return channel;
 	}
-
+// TODO: Change to read each value... parse the incomming string and pass back either on or multiple
+// entries, but make sure to keep any information not used
 	/**
 	 * Read from the passed channel and return as string
 	 * @param channel
@@ -157,12 +164,15 @@ public class StreamGobbler implements Runnable {
 		while (message.length() == 0) {
 			while (channel.read(receiveBuffer) > 0) {
 				// flip the buffer to start reading
+				
 				receiveBuffer.flip();
 				message += Charset.defaultCharset().decode(receiveBuffer);
+				
 			}
 			receiveBuffer.clear();
 		}
-		
+		if (message.length() > 9 || message.length() < 2)
+			System.out.println(message);
 		return message;
 	}
 

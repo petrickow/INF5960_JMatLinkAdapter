@@ -111,7 +111,11 @@ public class RespirationAnalyser {
 		double[][] data1 = new double[1][buffer.size()];
 		
 		for (int index = 0; index < buffer.size(); index++) {
-			data1[0][index] = Double.parseDouble(buffer.get(index));
+			try {
+				data1[0][index] = Double.parseDouble(buffer.get(index));
+			} catch (NumberFormatException e) {
+				System.out.println("Malformed entry in buffer:\n\t"+buffer.get(index));
+			}
 		}
 		engMatLab.engPutArray("data1", data1); // load record 
 		//engMatLab.engEvalString("data1 = load('" + f.getPath() + "');");  // load data file
