@@ -20,9 +20,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class StreamGobbler implements Runnable {
 
+	String bufferHistory = "";
+	
 	private Logger log; 
 	private List<String> sharedBuffer;
 	private List<Double> timeStamps;
@@ -33,10 +36,14 @@ public class StreamGobbler implements Runnable {
 	private ByteBuffer receiveBuffer = ByteBuffer.allocate(20);
 	RespirationAnalyser respirationAnalyser; 
 	int count;
+	Pattern regex;
+
 	
 	public StreamGobbler(RespirationAnalyser respirationAnalyser) {
 		log = Logger.getLogger(this.getClass());
 		BasicConfigurator.configure();
+		regex = Pattern.compile("^[a-zA-Z]+([0-9]+).*"); // TODO create a pattern that catches <x.xxx>
+
 		
 		log.debug("init gobbler");
 		
@@ -118,19 +125,43 @@ public class StreamGobbler implements Runnable {
 	}
 	
 	/**
-	 * Extra me 
+	 * A brute force parser. Checking that all arriving data points
+	 * are contained within the protocol defined containers
 	 * @param line
 	 * @return
 	 */
 	private Collection<String> checkResult(String line) {
+		List<String> res = new ArrayList<String>();
+		if (bufferHistory.length() > 0) {
+			line = bufferHistory + line;
+			bufferHistory = "";
+		}
+		char[] charA = line.toCharArray();
+		int start = 0;
+		// very brutish, swap for regex
+		for (int i = 0; i < charA.length; i++) { 
+			char c = charA[i];
+			if (c == '<') {
+				start = i + 1;
+			}
+			else if (c == '>') {
+				res.add(line.substring(start, i)); 
+				start = 0;
+			}
+		}
+		if (start != 0) { // we have found a '<' but no corresponding '>'
+			bufferHistory = line.substring(start);
+		}
+		
+		return res;
+		/*
 		String[] split = line.split(";");
 		if (split.length > 1) {
 			for (String s : split) {
 				System.out.println("\tx: '" + s + "'");
 			}
-			
 		}
-		return Arrays.asList(split);
+		return Arrays.asList(split);*/
 	}
 	/**
 	 * Create a socket channel 
@@ -151,6 +182,7 @@ public class StreamGobbler implements Runnable {
 		}
 		return channel;
 	}
+	
 // TODO: Change to read each value... parse the incoming string and pass back either on or multiple
 // entries, but make sure to keep any information not used
 	/**
@@ -171,8 +203,8 @@ public class StreamGobbler implements Runnable {
 			}
 			receiveBuffer.clear();
 		}
-		if (message.length() > 9 || message.length() < 2)
-			System.out.println(message);
+//		if (message.length() > 9 || message.length() < 2)
+//			System.out.println(message);
 		return message;
 	}
 

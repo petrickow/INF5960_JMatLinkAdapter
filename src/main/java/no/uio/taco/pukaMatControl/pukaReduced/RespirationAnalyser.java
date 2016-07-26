@@ -101,7 +101,7 @@ public class RespirationAnalyser {
 		
 	
 	public void analyseWindow(List<String> buffer) {
-		
+		long analyseWindowStartTime = System.currentTimeMillis();
 		/**
 		 * Step 1, load data, set start and end time
 		 */
@@ -132,6 +132,9 @@ public class RespirationAnalyser {
 		
 		analyseResp();
 		
+		long analyseWindowStopTime = System.currentTimeMillis();
+		long endTime = analyseWindowStopTime - analyseWindowStartTime;
+		System.out.println("====RESP ANALYSER: Complete anaysis ms: " + endTime);
 	}
 	
 	
