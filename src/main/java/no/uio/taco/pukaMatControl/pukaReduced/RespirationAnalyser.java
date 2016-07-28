@@ -1,6 +1,7 @@
 package no.uio.taco.pukaMatControl.pukaReduced;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 //import org.apache.log4j.BasicConfigurator;
@@ -13,15 +14,21 @@ import no.uio.taco.pukaMatControl.matControlAdapter.JMatLinkAdapter;
  * Utility class for running pukas respiration analysis without GUI. 
  * @author Cato Danielsen
  */
-public class RespirationAnalyser {
+public class RespirationAnalyser implements Runnable {
+	
+	public enum AnalysisType {
+	    LOCAL, STREAM
+	}
+	public List<String> buffer;
 	
 	private int step = 1; // step counter for stepInfo method
 	private boolean debug = true;
-	private JMatLinkAdapter engMatLab = null; 
+	private JMatLinkAdapter engMatLab = null;
+	
 	
 	private Settings settings;
 	private History history;
-	
+	private AnalysisType type;
 	//private Logger log; 
 	
 	/**
@@ -33,9 +40,29 @@ public class RespirationAnalyser {
 		//log.setAdditivity(false);
 		settings = new Settings(); // contains all variables for this analysis
 		history = new History();
+		type = AnalysisType.LOCAL; // default
+		buffer = new ArrayList<String>(); 
+		
 	}
 	
-	
+	public void run() {
+		
+		if (type == AnalysisType.LOCAL) {
+			try {
+				launchLocalFile(settings.filename);
+			} catch (MatlabInvocationException e) {
+				System.out.println("MATLAB session can not be reached");
+			}
+		}
+		
+		else if (type == AnalysisType.STREAM) {
+			try {
+				analyseWindow(buffer);
+			} catch (MatlabInvocationException e) {
+				System.out.println("MATLAB session can not be reached");
+			}
+		}
+	}
 	
 	
 	/**
@@ -44,7 +71,7 @@ public class RespirationAnalyser {
 	 * current directory. TODO: support absolute path
 	 * @param fname - name of signal file
 	 */
-	public void launchLocalFile(String fname) {
+	public void launchLocalFile(String fname) throws MatlabInvocationException {
 		
 		// 1: Get data if specified 
 		if (fname.length() > 0) {
@@ -108,12 +135,12 @@ public class RespirationAnalyser {
 	/**
 	 * Fetches clip size from shared buffer and analyzes the window
 	 */
-	public void launchOnlineAnalysis() {
+	public void launchMatlabInstance() {
 		startMatlab();
 	}
 		
 	
-	public void analyseWindow(List<String> buffer) {
+	public void analyseWindow(List<String> buffer) throws MatlabInvocationException {
 		long analyseWindowStartTime = System.currentTimeMillis();
 		/**
 		 * Step 1, load data, set start and end time
@@ -139,6 +166,7 @@ public class RespirationAnalyser {
 		/* STEP 1 cont:  find onset */
 		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
 	
+		double onsetTime = engMatLab.engGetScalar("onsetTime");
 		stepInfo("load data, set start and end time");
 		setOnset(); // TODO, should this be in here or in analyseResp()?	
 		
@@ -332,5 +360,16 @@ public class RespirationAnalyser {
 	 */
 	public int getClipLength() {
 		return settings.clipLength;
+	}
+	
+	/** 
+	 * Add buffer we want to analyse
+	 */
+	public void setBuffer(List<String> buffer) {
+		this.buffer = buffer;
+	}
+	
+	public void setAnalysisType(AnalysisType type) {
+		this.type = type;
 	}
 }

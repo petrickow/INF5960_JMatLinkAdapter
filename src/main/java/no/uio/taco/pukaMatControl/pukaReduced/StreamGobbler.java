@@ -7,6 +7,9 @@
 package no.uio.taco.pukaMatControl.pukaReduced;
 
 import org.apache.log4j.Logger;
+
+import matlabcontrol.MatlabInvocationException;
+
 import org.apache.log4j.BasicConfigurator;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -49,9 +52,9 @@ public class StreamGobbler implements Runnable {
 		log.debug("init gobbler");
 		this.fileName = fileName;
 		this.respirationAnalyser = respirationAnalyser;
-		respirationAnalyser.launchOnlineAnalysis();
+		respirationAnalyser.launchMatlabInstance();
 		
-		this.sharedBuffer = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));;
+		this.sharedBuffer = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));
 	}
 	/**
 	 * This requires the DataFeeder application to be running on the same host
@@ -63,7 +66,7 @@ public class StreamGobbler implements Runnable {
 	@Override
 	public void run() {
 
-		haltFor(1); // just to be able to read
+		//haltFor(1); // just to be able to read
 
 		SocketChannel channel; // connection to DataFeeder
 		
@@ -89,6 +92,7 @@ public class StreamGobbler implements Runnable {
 	private void receiveLoop(SocketChannel channel) throws IOException {
 		//long startTime = System.currentTimeMillis();
 		//long endTime = 0; 
+		log.info("starting receive loop");
 		for(;;) {
 			
 			String line = readFromChannel(channel);
@@ -104,22 +108,22 @@ public class StreamGobbler implements Runnable {
 			sharedBuffer.addAll(splitLine);
 			//timestamps.add(TODO: implicit time stamps?)
 
-			if (sharedBuffer.size() == respirationAnalyser.getClipLength()+2000) {
-				log.info("anaysis initated");
-				respirationAnalyser.analyseWindow(sharedBuffer);
+			if (sharedBuffer.size() == respirationAnalyser.getClipLength()+1000) {
+				log.info("Launch respiration analysis thread");
+				respirationAnalyser.setBuffer(sharedBuffer);
+				
+				Thread th = new Thread(respirationAnalyser);
+				th.start();
+				
+				// create new list for new arrivals
 				sharedBuffer = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));
 				timeStamps = Collections.synchronizedList(new ArrayList<Double>(respirationAnalyser.getClipLength()));
-				//respirationAnalyser.analyseWindow(); // separate thread due to the incomming traffic..
-				/*Used for testing timing
-				endTime = System.currentTimeMillis();
-				if (startTime != 0) { log.info("Time (seconds): " + (endTime-startTime)/1000); }
-	
-				log.info("window size: " + respirationAnalyser.getClipLength());
-				log.info("start analysis on " + sharedBuffer.size());
+
 				
-	        	startTime = System.currentTimeMillis();*/
+				//respirationAnalyser.analyseWindow(); // separate thread due to the incomming traffic..
 			}
 		}
+		log.debug("Receive loop done and done!");
 	}
 
 	

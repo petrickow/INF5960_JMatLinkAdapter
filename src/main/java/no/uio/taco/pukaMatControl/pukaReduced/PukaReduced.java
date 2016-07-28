@@ -6,6 +6,9 @@ import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import matlabcontrol.MatlabInvocationException;
+
 import java.util.List;
 
 /**
@@ -65,13 +68,20 @@ public class PukaReduced {
 			case "run":
 				respAnalyser.clean(); // reset
 				System.out.println("===pukaReduced Shell--->\tRequesting file '" + fName+"'");
-				respAnalyser.launchLocalFile(fName);
+				try {
+					respAnalyser.launchLocalFile(fName);
+				} catch (MatlabInvocationException e) {
+					System.out.println("Lost connection to MATLAB");
+				}
 				break;
+				
 			case "stream":
-
+				respAnalyser.clean();
+				respAnalyser.setAnalysisType(RespirationAnalyser.AnalysisType.STREAM);
 				Thread gobbler = new Thread(new StreamGobbler(respAnalyser, fName));
 				gobbler.start();
 				break;
+				
 			case "fname":
 				askForFileName();
 				String f = keyboard.nextLine().trim();
