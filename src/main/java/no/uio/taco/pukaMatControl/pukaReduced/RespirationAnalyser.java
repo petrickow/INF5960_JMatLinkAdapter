@@ -24,7 +24,9 @@ public class RespirationAnalyser {
 	
 	//private Logger log; 
 	
-	
+	/**
+	 * Constructor instantiates Settings and History object
+	 */
 	public RespirationAnalyser() {
 		//log = Logger.getLogger(this.getClass());
 		//BasicConfigurator.configure();
@@ -32,6 +34,9 @@ public class RespirationAnalyser {
 		settings = new Settings(); // contains all variables for this analysis
 		history = new History();
 	}
+	
+	
+	
 	
 	/**
 	 * Launches a recreation of pukas respiration analysis
@@ -49,6 +54,7 @@ public class RespirationAnalyser {
 		File textDataFile = new File(settings.filename);
 		//log.debug("Signal file:\t" + settings.filename + "\n============\texists: " + textDataFile.exists()); 
 		
+		
 		if (textDataFile.exists()) {
 			startMatlab();
 			step = 1;
@@ -57,8 +63,12 @@ public class RespirationAnalyser {
 			 */
 			stepInfo("load data, set start and end time");
 			loadFile(textDataFile);
-			setOnset(); // TODO, should this be in here or in analyseResp()?	
-
+			
+			/* TODO, should this be in here or in analyseResp()? AND
+			it should be modified to work automatically, that is if it does not
+			find onset time, we need to do some magic*/
+			setOnset(); 
+			
 			/**
 			 * Step 2, peak detection, find peaks and trough 
 			 */
@@ -88,9 +98,12 @@ public class RespirationAnalyser {
 					+ "to be modified in order to be used in a meaningful way for realtime analysis.\n\t"
 					+ "Look into how to extract the events");
 		} else {
-			
+			System.out.println("File not found");
 		}
 	}
+	
+	
+	/***************************** ONLINE PART *************************/
 	
 	/**
 	 * Fetches clip size from shared buffer and analyzes the window
@@ -106,8 +119,10 @@ public class RespirationAnalyser {
 		 * Step 1, load data, set start and end time
 		 */
 		step = 1;
+		
 		engMatLab.engEvalString("clear;");  // remove all previous information in workspace, if any
-		System.out.println(buffer.size());
+
+		/* STEP 1: Load data */
 		double[][] data1 = new double[1][buffer.size()];
 		
 		for (int index = 0; index < buffer.size(); index++) {
@@ -117,13 +132,11 @@ public class RespirationAnalyser {
 				System.out.println("Malformed entry in buffer:\n\t"+buffer.get(index));
 			}
 		}
-		engMatLab.engPutArray("data1", data1); // load record 
-		//engMatLab.engEvalString("data1 = load('" + f.getPath() + "');");  // load data file
+		engMatLab.engPutArray("data1", data1); // load record
 		engMatLab.engEvalString("y = data1(1, :);");  // get trigger col into y in matlab
-		
-		//log.debug("Change MATLAB folder to script path: " + settings.scriptPath);
 		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
 		
+		/* STEP 1 cont:  find onset */
 		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
 	
 		stepInfo("load data, set start and end time");
@@ -268,6 +281,7 @@ public class RespirationAnalyser {
 	 * Clean the launcher settings and step
 	 */
 	public void clean() {
+		System.out.println("===Respiration Analyser---> Reset analysis");
 		String temp;
 		step = 1; // clear steps 
 		if (settings != null) {

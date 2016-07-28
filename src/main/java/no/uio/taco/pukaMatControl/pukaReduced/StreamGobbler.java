@@ -30,23 +30,24 @@ public class StreamGobbler implements Runnable {
 	private List<String> sharedBuffer;
 	private List<Double> timeStamps;
 	
-	private String fileName = "signal.txt";
+	private String fileName;
+	
 	private int port = 4444;
+	private String addr = "localhost";
 
 	private ByteBuffer receiveBuffer = ByteBuffer.allocate(20);
 	RespirationAnalyser respirationAnalyser; 
-	int count;
 	Pattern regex;
 
 	
-	public StreamGobbler(RespirationAnalyser respirationAnalyser) {
+	public StreamGobbler(RespirationAnalyser respirationAnalyser, String fileName) {
 		log = Logger.getLogger(this.getClass());
 		BasicConfigurator.configure();
 		regex = Pattern.compile("^[a-zA-Z]+([0-9]+).*"); // TODO create a pattern that catches <x.xxx>
 
 		
 		log.debug("init gobbler");
-		
+		this.fileName = fileName;
 		this.respirationAnalyser = respirationAnalyser;
 		respirationAnalyser.launchOnlineAnalysis();
 		
@@ -62,7 +63,6 @@ public class StreamGobbler implements Runnable {
 	@Override
 	public void run() {
 
-		log.debug("We now wait for connection to 'sensor'");
 		haltFor(1); // just to be able to read
 
 		SocketChannel channel; // connection to DataFeeder
@@ -77,7 +77,6 @@ public class StreamGobbler implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			//TODO: check error and handle appropriate (most likely connection exception)
 			resetShell();
 		}
 	}
@@ -94,7 +93,6 @@ public class StreamGobbler implements Runnable {
 			
 			String line = readFromChannel(channel);
 			
-			count++;
 			if (line.endsWith(",400")) {
 				log.error(line);
 				resetShell();
@@ -123,7 +121,11 @@ public class StreamGobbler implements Runnable {
 			}
 		}
 	}
+
 	
+	// DONE: Change to read each value... parse the incoming string and pass back either on or multiple
+	// entries, but make sure to keep any information not used
+
 	/**
 	 * A brute force parser. Checking that all arriving data points
 	 * are contained within the protocol defined containers
@@ -169,22 +171,21 @@ public class StreamGobbler implements Runnable {
 	 * @throws IOException
 	 */
 	private SocketChannel intiateConnection() throws IOException {
-		count = 0;
+		log.debug("Connection to " + addr + " on port " + port);
+		
 		SocketChannel channel = SocketChannel.open();	
 
 		// we open this channel in non blocking mode
 		channel.configureBlocking(false);
-		channel.connect(new InetSocketAddress("localhost", port));
+		channel.connect(new InetSocketAddress(addr, port));
 
 		while (!channel.finishConnect()) {
-			//log.info("still connecting");
+			//log.info("still connecting"); // blocking wait
 			haltFor(0.5);
 		}
 		return channel;
 	}
 	
-// TODO: Change to read each value... parse the incoming string and pass back either on or multiple
-// entries, but make sure to keep any information not used
 	/**
 	 * Read from the passed channel and return as string
 	 * @param channel
@@ -251,6 +252,10 @@ public class StreamGobbler implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
 	}
 	
 }

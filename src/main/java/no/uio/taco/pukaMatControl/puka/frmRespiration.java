@@ -32,8 +32,10 @@ public class frmRespiration extends javax.swing.JInternalFrame  {
 		frmLoadData.engMatLab.engEvalString("y = data1(:, " + frmPreferences.getColRespiration() + ");"); // get the column
 		
 		int startTime = frmLoadData.getStartTime(); int stopTime = frmLoadData.getStopTime();
-		frmLoadData.engMatLab.engEvalString("y = y(" + startTime + ":" + stopTime + ");"); // trim y? TODO: document error in puka? this was startTime, stopTime... resulting in y = scalar...
-		frmLoadData.engMatLab.engEvalString("plot(y, 'm');");  //show the respiration signal so can check it
+		// this was originally 'startTime, stopTime', resulting in y = scalar... changed to 'startTime : stoptime'
+		frmLoadData.engMatLab.engEvalString("y = y(" + startTime + ":" + stopTime + ");");
+		//plot the respiration signal so can check it
+		frmLoadData.engMatLab.engEvalString("plot(y, 'm');");  
 
 		//initialize the RespMeasures object so can store the information
 		rmData = new RespMeasures();  //get object ready to store 

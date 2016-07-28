@@ -21,7 +21,7 @@ public class Settings {
 	int intStartTime = 0;
 	
 	public Settings() {
-		System.out.println("Creating settings object");
+		System.out.println("Creating settings object\nScript folder: " + System.getProperty("user.dir") + "\\matlabScripts" + "\nSignal folder: " +System.getProperty("user.dir"));
 		scriptPath = System.getProperty("user.dir") + "\\matlabScripts";
 		filename = System.getProperty("user.dir") + "\\signal.txt"; // default to signal.txt in root folder
 	}
