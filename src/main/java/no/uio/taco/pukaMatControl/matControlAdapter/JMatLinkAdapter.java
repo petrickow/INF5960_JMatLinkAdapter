@@ -63,9 +63,9 @@ public class JMatLinkAdapter implements IJMatLink {
 				setDebug(true);
 				
 			} catch (MatlabConnectionException e) {
-				// TODO: Debug information
+				// TODO: Better error print
 				e.printStackTrace();
-				System.exit(0); // terminate execution
+				System.exit(1); // terminate execution
 			}
 		}
 	}
@@ -103,6 +103,7 @@ public class JMatLinkAdapter implements IJMatLink {
 			
 		} catch (MatlabInvocationException e) {
 			// TODO Auto-generated catch block: Debuginformation if we crash
+			
 			e.printStackTrace();
 		}
 		return null;
@@ -161,8 +162,7 @@ public class JMatLinkAdapter implements IJMatLink {
 
 	// Not used in puka, low priority
 	public void engCloseAll() {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	// Not used in puka, low priority
