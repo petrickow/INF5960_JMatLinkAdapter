@@ -29,7 +29,7 @@ public class RespirationAnalyser implements Runnable {
 	private Settings settings;
 	private History history;
 	private AnalysisType type;
-	//private Logger log; 
+//	private Logger log; // TODO: 
 	
 	/**
 	 * Constructor instantiates Settings and History object
@@ -49,7 +49,7 @@ public class RespirationAnalyser implements Runnable {
 		
 		if (type == AnalysisType.LOCAL) {
 			try {
-				launchLocalFile(settings.filename);
+				launchLocalFile(settings.fileName);
 			} catch (MatlabInvocationException e) {
 				System.out.println("MATLAB session can not be reached");
 			}
@@ -75,10 +75,10 @@ public class RespirationAnalyser implements Runnable {
 		
 		// 1: Get data if specified 
 		if (fname.length() > 0) {
-			settings.filename = System.getProperty("user.dir") + "\\" + fname; // no fault handeling
+			settings.fileName = System.getProperty("user.dir") + "\\" + fname; // no fault handeling
 		}
 
-		File textDataFile = new File(settings.filename);
+		File textDataFile = new File(settings.fileName);
 		//log.debug("Signal file:\t" + settings.filename + "\n============\texists: " + textDataFile.exists()); 
 		
 		
@@ -137,9 +137,11 @@ public class RespirationAnalyser implements Runnable {
 	 */
 	public void launchMatlabInstance() {
 		startMatlab();
+		initializeMatlabVariables();
 	}
 		
 	
+
 	public void analyseWindow(List<String> buffer) throws MatlabInvocationException {
 		long analyseWindowStartTime = System.currentTimeMillis();
 		/**
@@ -156,7 +158,7 @@ public class RespirationAnalyser implements Runnable {
 			try {
 				data1[0][index] = Double.parseDouble(buffer.get(index));
 			} catch (NumberFormatException e) {
-				System.out.println("Malformed entry in buffer:\n\t"+buffer.get(index));
+				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
 			}
 		}
 		engMatLab.engPutArray("data1", data1); // load record
@@ -190,7 +192,7 @@ public class RespirationAnalyser implements Runnable {
 		engMatLab.engEvalString("data1 = load('" + f.getPath() + "');");  // load data file
 		engMatLab.engEvalString("y = data1(:, 1);");  // get trigger col into y in matlab
 		
-		//log.debug("Change MATLAB folder to script path: " + settings.scriptPath);
+//		log.debug("Change MATLAB folder to script path: " + settings.scriptPath);
 		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
 		
 		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
@@ -200,21 +202,19 @@ public class RespirationAnalyser implements Runnable {
 	 * Initiate respiration analysis. MATLAB session has to be running,
 	 */
 	private void analyseResp() {
-		
-		/**
+		/*
 		 * Step 2, peak detection, find peaks and trough 
 		 */
 		stepInfo("peak detection");
 		peakDetection();
 		
-		
-		/**
+		/*
 		 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
 		 */
 		stepInfo("classify peaks");
 		classifyPeaks();
 		
-		/**
+		/*
 		 * Step 4,
 		 */
 		stepInfo("pause detection:\n\t"
@@ -222,6 +222,14 @@ public class RespirationAnalyser implements Runnable {
 		pauseDetection();
 	}
 	
+	
+	/******************ANALYSIS MATLAB INTERACTIONS *************************/
+	
+	/**
+	 * Get the onset time calculated in MATLAB and
+	 * set start and end time for the clip used
+	 * in the respiration analysis
+	 */
 	private void setOnset() {
 		double dblTemp = -1;
 
@@ -233,11 +241,11 @@ public class RespirationAnalyser implements Runnable {
 			e.printStackTrace();
 			System.exit(1); // TODO: better error handling
 		}
-		//if findOnset returns a time of -1 then it was unable to locate a good onset time
+//		if findOnset returns a time of -1 then it was unable to locate a good onset time
 		
 		if ((int)dblTemp < 0) { 
-			//log.error("not able to get a good onset!");  
-			// TODO: what to do?
+//			log.error("not able to get a good onset!");  
+//			TODO: what to do?
 			System.exit(1);
 		}  
 		else {
@@ -255,19 +263,18 @@ public class RespirationAnalyser implements Runnable {
 	 */
 	private void peakDetection() {
 		/* already done 
-		//frmLoadData.engMatLab.engEvalString("y = data1(:, 1);"); // get the column HARDCODED 
+//		frmLoadData.engMatLab.engEvalString("y = data1(:, 1);"); // get the column HARDCODED 
 		
-		//int startTime = frmLoadData.getStartTime(); 
-		//int stopTime = frmLoadData.getStopTime();
+//		int startTime = frmLoadData.getStartTime(); 
+//		int stopTime = frmLoadData.getStopTime();
 		*/
 		System.out.println("SEttings: startTime: "+ settings.intStartTime + " and stopTime: "+ settings.intStopTime);
 		engMatLab.engEvalString("y = y(" + settings.intStartTime + ":" + settings.intStopTime + ");"); // trim y? TODO: document error in puka? this was startTime, stopTime... resulting in y = scalar...
-		//engMatLab.engEvalString("plot(y, 'm');");  //show the respiration signal so can check it
+//		engMatLab.engEvalString("plot(y, 'm');");  //show the respiration signal so can check it
 		
-		// got the graph ready Do the Peak detection
+//		got the graph ready Do the Peak detection
 		engMatLab.engEvalString("[P,T,th,Qd] = newPT(y, .1, onsetTime, endTime)");
 	}
-	
 	
 	/**
 	 * Runs pukas classify peaks script, which labels all peaks and troughs found with
@@ -275,8 +282,8 @@ public class RespirationAnalyser implements Runnable {
 	 */
 	private void classifyPeaks() {
 		engMatLab.engEvalString("[peakLabels,troughLabels] = classifyPeaks(Qd,P,T,th);");
-		// we can select only the validated peaks and troughs? We'll see
-		// look in DoApply to see how changes are made... now peak/trough contains all: valid, invalid and questionable
+//		we can select only the validated peaks and troughs? We'll see
+//		look in DoApply to see how changes are made... now peak/trough contains all: valid, invalid and questionable
 	}
 	
 	/**
@@ -293,6 +300,10 @@ public class RespirationAnalyser implements Runnable {
 	}
 	
 
+	
+	
+	/********************** UTILS ********************************/
+	
 	/**
 	 * Creates a new instance of JMatLinkAdapter and opens a connection. If an existing connection
 	 * exists, this will reset the MATLAB engine.
@@ -313,11 +324,11 @@ public class RespirationAnalyser implements Runnable {
 		String temp;
 		step = 1; // clear steps 
 		if (settings != null) {
-			temp = settings.filename; // keep filename
+			temp = settings.fileName; // keep filename
 			settings = new Settings(); // clear all settings
-			settings.filename = temp;
+			settings.fileName = temp;
 		} else {
-			// initial run, we  don't have to do anything, launch creates settings
+//			 initial run, we  don't have to do anything, launch creates settings
 		} 
 	}
 	
@@ -331,7 +342,7 @@ public class RespirationAnalyser implements Runnable {
 	}
 
 	/**
-	 * Let the user toggle debug for the JMatLinkAdaper connection to MATLAB
+	 * Let the user toggle debug print for the JMatLinkAdaper connection to MATLAB
 	 * @return the new value, true if debug is set.
 	 */
 	public boolean toggleDebug() {
@@ -344,8 +355,8 @@ public class RespirationAnalyser implements Runnable {
 	}
 		
 	/**
-	 * Util method for printing debug information about which step in the respiration analysis
-	 * we are in
+	 * Utility method for printing debug information about which step in the 
+	 * respiration analysis we are in
 	 * @param s - information about the step
 	 */
 	private void stepInfo(String s) {
@@ -363,7 +374,7 @@ public class RespirationAnalyser implements Runnable {
 	}
 	
 	/** 
-	 * Add buffer we want to analyse
+	 * Add buffer we want to analyze
 	 */
 	public void setBuffer(List<String> buffer) {
 		this.buffer = buffer;
@@ -371,5 +382,14 @@ public class RespirationAnalyser implements Runnable {
 	
 	public void setAnalysisType(AnalysisType type) {
 		this.type = type;
+	}
+	
+	/**
+	 * To reduce the analysis execution of the first window
+	 * we have to set everything up in the MATLAB workspace
+	 */
+	private void initializeMatlabVariables() {
+		// TODO Auto-generated method stub
+		
 	}
 }

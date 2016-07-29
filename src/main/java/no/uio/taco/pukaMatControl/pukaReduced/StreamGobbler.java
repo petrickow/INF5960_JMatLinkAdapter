@@ -29,6 +29,8 @@ public class StreamGobbler implements Runnable {
 
 	String bufferHistory = "";
 	
+	private boolean exitFlag = false;
+	
 	private Logger log; 
 	private List<String> sharedBuffer;
 	private List<Double> timeStamps;
@@ -97,7 +99,8 @@ public class StreamGobbler implements Runnable {
 			
 			String line = readFromChannel(channel);
 			
-			if (line.endsWith(",400")) {
+			if (line.endsWith(",400") || exitFlag) {
+				channel.close();
 				log.error(line);
 				resetShell();
 				break;
@@ -262,4 +265,9 @@ public class StreamGobbler implements Runnable {
 		this.fileName = fileName;
 	}
 	
+	
+	
+	public synchronized void disconnect() {
+		exitFlag = true;
+	}
 }
