@@ -2,13 +2,17 @@ package no.uio.taco.pukaMatControl.pukaReduced;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
-//import org.apache.log4j.BasicConfigurator;
-//import org.apache.log4j.Logger;
+import com.espertech.esper.epl.join.base.HistoricalIndexLookupStrategySorted;
 
 import matlabcontrol.MatlabInvocationException;
 import no.uio.taco.pukaMatControl.matControlAdapter.JMatLinkAdapter;
+//import org.apache.log4j.BasicConfigurator;
+//import org.apache.log4j.Logger;
+
 
 /** 
  * Utility class for running pukas respiration analysis without GUI. 
@@ -25,9 +29,8 @@ public class RespirationAnalyser implements Runnable {
 	private boolean debug = true;
 	private JMatLinkAdapter engMatLab = null;
 	
-	
 	private Settings settings;
-	private History history;
+	private List<String> history;
 	private AnalysisType type;
 //	private Logger log; // TODO: 
 	
@@ -39,22 +42,19 @@ public class RespirationAnalyser implements Runnable {
 		//BasicConfigurator.configure();
 		//log.setAdditivity(false);
 		settings = new Settings(); // contains all variables for this analysis
-		history = new History();
+		history = new ArrayList<String>();
+		buffer = new ArrayList<String>();
 		type = AnalysisType.LOCAL; // default
-		buffer = new ArrayList<String>(); 
-		
 	}
 	
 	public void run() {
-		
-		if (type == AnalysisType.LOCAL) {
+		if (type == AnalysisType.LOCAL) { // overflødig!
 			try {
 				launchLocalFile(settings.fileName);
 			} catch (MatlabInvocationException e) {
 				System.out.println("MATLAB session can not be reached");
 			}
 		}
-		
 		else if (type == AnalysisType.STREAM) {
 			try {
 				analyseWindow(buffer);
@@ -63,7 +63,6 @@ public class RespirationAnalyser implements Runnable {
 			}
 		}
 	}
-	
 	
 	/**
 	 * Launches a recreation of pukas respiration analysis
@@ -135,52 +134,76 @@ public class RespirationAnalyser implements Runnable {
 	/**
 	 * Fetches clip size from shared buffer and analyzes the window
 	 */
-	public void launchMatlabInstance() {
-		startMatlab();
-		initializeMatlabVariables();
-	}
+
 		
 	
 
 	public void analyseWindow(List<String> buffer) throws MatlabInvocationException {
 		long analyseWindowStartTime = System.currentTimeMillis();
-		/**
-		 * Step 1, load data, set start and end time
-		 */
-		step = 1;
+
 		
+		step = 1;
 		engMatLab.engEvalString("clear;");  // remove all previous information in workspace, if any
 
 		/* STEP 1: Load data */
-		double[][] data1 = new double[1][buffer.size()];
-		
-		for (int index = 0; index < buffer.size(); index++) {
-			try {
-				data1[0][index] = Double.parseDouble(buffer.get(index));
-			} catch (NumberFormatException e) {
-				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
-			}
-		}
-		engMatLab.engPutArray("data1", data1); // load record
-		engMatLab.engEvalString("y = data1(1, :);");  // get trigger col into y in matlab
-		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
+		loadDataIntoMatlab(buffer);
 		
 		/* STEP 1 cont:  find onset */
 		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
 	
-		double onsetTime = engMatLab.engGetScalar("onsetTime");
+//		double onsetTime = engMatLab.engGetScalar("onsetTime");
+		if (setOnset()) { 
+			analyseResp();
+			long analyseWindowStopTime = System.currentTimeMillis();
+			long endTime = analyseWindowStopTime - analyseWindowStartTime;
+			System.out.println("====RESP ANALYSER: Complete analysis ms: " + endTime);
+			
+			history = new ArrayList<String>(settings.clipLength); // clear history list
+			preserveHistory(buffer);
+			
+		} else {
+			history.addAll(buffer);
+			System.out.println("====RESP ANALYSER: Failed to find OnsetTime in signal\n\t"
+					+ "Window too small?\n\t"
+					+ "Long respiration halt?");
+		}
+	}
+
+	/**
+	 * @param buffer
+	 */
+	private void loadDataIntoMatlab(List<String> buffer) {
 		stepInfo("load data, set start and end time");
-		setOnset(); // TODO, should this be in here or in analyseResp()?	
+		System.out.println(history.size()+buffer.size()); 
+		double[][] data1 = new double[1][history.size()+buffer.size()]; // convert to matlab friendly type
+		int index = 0;
 		
+		while (index < history.size()) {
+			try {
+				data1[0][index] = Double.parseDouble(buffer.get(index++));
+			}
+			catch (NumberFormatException e) {
+				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
+			}
+		}
 		
-		analyseResp();
+		System.out.print("History to: " + index + " ...");
 		
-		long analyseWindowStopTime = System.currentTimeMillis();
-		long endTime = analyseWindowStopTime - analyseWindowStartTime;
-		System.out.println("====RESP ANALYSER: Complete anaysis ms: " + endTime);
+		for (int bufferIndex = 0 ; index < (history.size() + buffer.size()); index++) {
+			try {
+				data1[0][index] = Double.parseDouble(buffer.get(bufferIndex++));
+			} catch (NumberFormatException e) {
+				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
+			}
+		}
+		System.out.println("Buffer to: " + index);
+		settings.clipLength = index - 1000;
+		engMatLab.engPutArray("data1", data1); // load record
+		engMatLab.engEvalString("y = data1(1, :);");  // get trigger col into y in matlab
 	}
 	
-	
+
+
 	/**
 	 * Load a local file to be used in the respiration analysis. This method assumes
 	 * the file is consistent with the raw data format described in the puka manual.
@@ -194,7 +217,6 @@ public class RespirationAnalyser implements Runnable {
 		
 //		log.debug("Change MATLAB folder to script path: " + settings.scriptPath);
 		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
-		
 		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
 	}
 	
@@ -207,13 +229,11 @@ public class RespirationAnalyser implements Runnable {
 		 */
 		stepInfo("peak detection");
 		peakDetection();
-		
 		/*
 		 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
 		 */
 		stepInfo("classify peaks");
 		classifyPeaks();
-		
 		/*
 		 * Step 4,
 		 */
@@ -230,7 +250,7 @@ public class RespirationAnalyser implements Runnable {
 	 * set start and end time for the clip used
 	 * in the respiration analysis
 	 */
-	private void setOnset() {
+	private boolean setOnset() {
 		double dblTemp = -1;
 
 		try{
@@ -241,18 +261,22 @@ public class RespirationAnalyser implements Runnable {
 			e.printStackTrace();
 			System.exit(1); // TODO: better error handling
 		}
+
 //		if findOnset returns a time of -1 then it was unable to locate a good onset time
-		
 		if ((int)dblTemp < 0) { 
-//			log.error("not able to get a good onset!");  
-//			TODO: what to do?
-			System.exit(1);
+			System.out.println("not able to get a good onset!");  
+			return false; 
 		}  
 		else {
+			System.out.println("===ONSET: " + (int)dblTemp);
 			settings.intStartTime = (int)dblTemp;  //assign start time to public variable
-			settings.intStopTime = settings.clipLength + settings.intStartTime; 
-			// inform MATLAB. This should include a check to make sure we do not exceed record size
+
+//			TODO: add check to make sure we do not exceed the buffer.size
+			settings.intStopTime = settings.clipLength + settings.intStartTime;
+
+//			inform MATLAB. This should include a check to make sure we do not exceed record size
 			engMatLab.engPutArray("endTime", (double)settings.intStopTime);
+			return true;
 		}
 	}
 	
@@ -268,7 +292,7 @@ public class RespirationAnalyser implements Runnable {
 //		int startTime = frmLoadData.getStartTime(); 
 //		int stopTime = frmLoadData.getStopTime();
 		*/
-		System.out.println("SEttings: startTime: "+ settings.intStartTime + " and stopTime: "+ settings.intStopTime);
+		System.out.println("Settings: startTime: "+ settings.intStartTime + " and stopTime: "+ settings.intStopTime);
 		engMatLab.engEvalString("y = y(" + settings.intStartTime + ":" + settings.intStopTime + ");"); // trim y? TODO: document error in puka? this was startTime, stopTime... resulting in y = scalar...
 //		engMatLab.engEvalString("plot(y, 'm');");  //show the respiration signal so can check it
 		
@@ -305,6 +329,40 @@ public class RespirationAnalyser implements Runnable {
 	/********************** UTILS ********************************/
 	
 	/**
+	 * Looks for the last found event, and adds the remainder of the signal to
+	 * the history buffer
+	 */
+	private void preserveHistory(List<String> buffer) {
+		double peakMax = 0;
+		double troughMax = 0;
+		
+		// DEBUG HER! virker som om vi alltid havner i else:
+		double[][] P = engMatLab.engGetArray("P");
+		double[][] T = engMatLab.engGetArray("T");
+		
+		if (P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
+		if (T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
+		
+		if (peakMax > 0 || troughMax > 0) {
+			double max = (peakMax > troughMax) ? peakMax : troughMax;
+			List<String> preserve = buffer.subList((int) max, buffer.size());
+			history.addAll(preserve);
+		} else {
+//			No information retrieved from the window, try again with more info.
+//			This can be because of no
+			history.addAll(buffer); 
+		}
+	}
+	
+	/**
+	 * Fluff?
+	 */
+	public void launchMatlabInstance() {
+		startMatlab();
+		initializeMatlabVariables();
+	}
+	
+	/**
 	 * Creates a new instance of JMatLinkAdapter and opens a connection. If an existing connection
 	 * exists, this will reset the MATLAB engine.
 	 */
@@ -314,6 +372,8 @@ public class RespirationAnalyser implements Runnable {
 		}
 		engMatLab.engOpen(); // this resets if we already have a connection
 		engMatLab.setDebug(debug); // whenever we start, set debug according to user preferences
+		
+		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
 	}
 	
 	/**
@@ -389,7 +449,8 @@ public class RespirationAnalyser implements Runnable {
 	 * we have to set everything up in the MATLAB workspace
 	 */
 	private void initializeMatlabVariables() {
-		// TODO Auto-generated method stub
+//		TODO: Identify why the first analysis is 10 times slower than
+//		subsequent iterations	
 		
 	}
 }
