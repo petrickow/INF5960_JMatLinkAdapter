@@ -113,19 +113,22 @@ public class RespirationAnalyser implements Runnable {
 		
 		
 		if (textDataFile.exists()) {
+			long start, end1, end2, end3, end4, end5 = 0;
 			startMatlab();
 			step = 1;
 			/**
 			 * Step 1, load data, set start and end time
 			 */
+			
 			stepInfo("load data, set start and end time");
+			start = System.nanoTime();
 			loadFile(textDataFile);
 			
 			/* TODO, should this be in here or in analyseResp()? AND
 			it should be modified to work automatically, that is if it does not
 			find onset time, we need to do some magic*/
 			setOnset();
-			
+			end1 = System.nanoTime();
 			
 			
 			/**
@@ -134,13 +137,14 @@ public class RespirationAnalyser implements Runnable {
 			stepInfo("peak detection");
 			peakDetection();
 			
-			
+			end2 = System.nanoTime();
 			/**
 			 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
 			 */
 			stepInfo("classify peaks");
 			classifyPeaks();
 			
+			end3 = System.nanoTime();
 			/**
 			 * Step 4,
 			 */
@@ -148,6 +152,7 @@ public class RespirationAnalyser implements Runnable {
 					+ "Uses matlab again to detect the start and end point of the pause around the peak");
 			pauseDetection();
 			
+			end4 = System.nanoTime();
 			
 			/**
 			 * Step 5, statistical calculation 
@@ -155,22 +160,23 @@ public class RespirationAnalyser implements Runnable {
 			stepInfo("statistical calculation:\n\t"
 					+ "This step looks at the information gathered in the current clip, and has\n\t"
 					+ "to be modified in order to be used in a meaningful way for realtime analysis.\n\t"
-					+ "Look into how to extract the events");
+					+ "Look into how to extract the events, CalculateResp:596");
+//			end5 = System.nanoTime();
+			
+			printTiming(start, end1, end2, end3, end4, end5);
+			
 		} else {
 			System.out.println("File not found");
 		}
+		
 	}
 	
 	
 	/***************************** ONLINE PART *************************/
-	
+
 	/**
 	 * Fetches clip size from shared buffer and analyzes the window
 	 */
-
-		
-	
-
 	public void analyseWindow(List<String> buffer) throws MatlabInvocationException {
 		long analyseWindowStartTime = System.currentTimeMillis();
 
@@ -508,10 +514,20 @@ public class RespirationAnalyser implements Runnable {
 		System.out.println("new window: " + buffer.size());
 		this.currentWindow = buffer;
 	}
-	
+
+	/**
+	 * Not in use any more after change from running thread for online analysis 
+	 * @param type
+	 */
 	public void setAnalysisType(AnalysisType type) {
 		this.type = type;
 	}
+	
+	private void printTiming(long start, long end1, long end2, long end3, long end4, long end5) {
+		// TODO Auto-generated method stub
+	}
+
+
 	
 	/**
 	 * To reduce the analysis execution of the first window
@@ -522,4 +538,6 @@ public class RespirationAnalyser implements Runnable {
 //		subsequent iterations	
 		
 	}
+	
+	
 }
