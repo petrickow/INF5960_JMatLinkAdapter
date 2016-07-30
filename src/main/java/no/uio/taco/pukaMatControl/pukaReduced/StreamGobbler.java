@@ -32,7 +32,7 @@ public class StreamGobbler implements Runnable {
 	private boolean exitFlag = false;
 	
 	private Logger log; 
-	private List<String> sharedBuffer;
+	private List<String> readBuffer;
 	private List<Double> timeStamps;
 	
 	private String fileName;
@@ -43,20 +43,25 @@ public class StreamGobbler implements Runnable {
 	private ByteBuffer receiveBuffer = ByteBuffer.allocate(20);
 	RespirationAnalyser respirationAnalyser; 
 	Pattern regex;
-
 	
-	public StreamGobbler(RespirationAnalyser respirationAnalyser, String fileName) {
+	/**
+	 * Constructor creates logger, a shared buffer which will be passed to 
+	 * the analysis class, and launches the matlab instance.
+	 * @param fileName - the desired filename specified by the user via the shell
+	 */
+	public StreamGobbler(String fileName) {
 		log = Logger.getLogger(this.getClass());
 		BasicConfigurator.configure();
-		regex = Pattern.compile("^[a-zA-Z]+([0-9]+).*"); // TODO create a pattern that catches <x.xxx>
-
-		
 		log.debug("init gobbler");
+		
+		regex = Pattern.compile("^[a-zA-Z]+([0-9]+).*"); // TODO create a pattern that catches <x.xxx>
+		
+		this.readBuffer = Collections.synchronizedList(new ArrayList<String>());
 		this.fileName = fileName;
-		this.respirationAnalyser = respirationAnalyser;
+		this.respirationAnalyser = new RespirationAnalyser(readBuffer);
+		respirationAnalyser.toggleDebug();
 		respirationAnalyser.launchMatlabInstance();
 		
-		this.sharedBuffer = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));
 	}
 	/**
 	 * This requires the DataFeeder application to be running on the same host
@@ -82,6 +87,7 @@ public class StreamGobbler implements Runnable {
 				}
 			}
 		} catch (IOException e) {
+			log.error("Communication errer: '" + e.getMessage() + "'");
 			resetShell();
 		}
 	}
@@ -94,7 +100,12 @@ public class StreamGobbler implements Runnable {
 	private void receiveLoop(SocketChannel channel) throws IOException {
 		//long startTime = System.currentTimeMillis();
 		//long endTime = 0; 
-		log.info("starting receive loop");
+		log.info("Starting receive loop and analyser thread");
+		
+		Thread th = new Thread(respirationAnalyser);
+		th.start();
+		
+		List<String> temp = new ArrayList<String>(readBuffer.size());
 		for(;;) {
 			
 			String line = readFromChannel(channel);
@@ -108,22 +119,22 @@ public class StreamGobbler implements Runnable {
 			
 			/* Need to double check that we only have one entry pr line */
 			Collection<String> splitLine = checkResult(line);
-			sharedBuffer.addAll(splitLine);
+			readBuffer.addAll(splitLine);
 			//timestamps.add(TODO: implicit time stamps?)
 
-			if (sharedBuffer.size() == respirationAnalyser.getClipLength()+1000) {
-				log.info("Launch respiration analysis thread");
-				respirationAnalyser.setBuffer(sharedBuffer);
+			if (readBuffer.size() == 10000+1000) { //TODO !!! read a bit extra, define standard window size!
+				log.info("Launch respiration analysis, buffersize: " + respirationAnalyser.getClipLength());
 				
-				Thread th = new Thread(respirationAnalyser);
-				th.start();
-				
+				synchronized (respirationAnalyser) {
+					/*TODO: wait for the analysis to complete? */
+					temp.addAll(readBuffer);
+					respirationAnalyser.setBuffer(temp);
+					respirationAnalyser.notifyAll();
+					
+				}
 				// create new list for new arrivals
-				sharedBuffer = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));
-				timeStamps = Collections.synchronizedList(new ArrayList<Double>(respirationAnalyser.getClipLength()));
-
-				
-				//respirationAnalyser.analyseWindow(); // separate thread due to the incomming traffic..
+				readBuffer.clear(); 	// = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));
+				temp = new ArrayList<String>(readBuffer.size());
 			}
 		}
 		log.debug("Receive loop done and done!");

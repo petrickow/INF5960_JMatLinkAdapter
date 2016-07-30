@@ -88,7 +88,7 @@ public class PukaReduced {
 					analysisRunning = true; 
 					respAnalyser.clean();
 					respAnalyser.setAnalysisType(RespirationAnalyser.AnalysisType.STREAM);
-					StreamGobbler sg = new StreamGobbler(respAnalyser, fName);
+					StreamGobbler sg = new StreamGobbler(fName);
 					Thread thGobbler = new Thread(sg);
 					runningGobblers.add(sg);
 					thGobbler.start();
