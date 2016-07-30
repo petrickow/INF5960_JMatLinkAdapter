@@ -106,10 +106,11 @@ public class StreamGobbler implements Runnable {
 		th.start();
 		
 		List<String> temp = new ArrayList<String>(readBuffer.size());
+		
 		for(;;) {
 			
 			String line = readFromChannel(channel);
-			
+
 			if (line.endsWith(",400") || exitFlag) {
 				channel.close();
 				log.error(line);
@@ -122,8 +123,8 @@ public class StreamGobbler implements Runnable {
 			readBuffer.addAll(splitLine);
 			//timestamps.add(TODO: implicit time stamps?)
 
-			if (readBuffer.size() == 10000+1000) { //TODO !!! read a bit extra, define standard window size!
-				log.info("Launch respiration analysis, buffersize: " + respirationAnalyser.getClipLength());
+			if (readBuffer.size() == 10000) { //TODO define standard window size!
+				log.info("Launch respiration analysis");
 				
 				synchronized (respirationAnalyser) {
 					/*TODO: wait for the analysis to complete? */
@@ -133,8 +134,9 @@ public class StreamGobbler implements Runnable {
 					
 				}
 				// create new list for new arrivals
-				readBuffer.clear(); 	// = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));
 				temp = new ArrayList<String>(readBuffer.size());
+				readBuffer.clear(); 	// = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));
+				
 			}
 		}
 		log.debug("Receive loop done and done!");
@@ -174,15 +176,8 @@ public class StreamGobbler implements Runnable {
 		}
 		
 		return res;
-		/*
-		String[] split = line.split(";");
-		if (split.length > 1) {
-			for (String s : split) {
-				System.out.println("\tx: '" + s + "'");
-			}
-		}
-		return Arrays.asList(split);*/
 	}
+
 	/**
 	 * Create a socket channel 
 	 * @return

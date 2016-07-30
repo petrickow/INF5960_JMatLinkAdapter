@@ -35,7 +35,7 @@ public class RespirationAnalyser implements Runnable {
 	private List<String> history;
 	private AnalysisType type;
 //	private Logger log; // TODO: 
-	
+	int offset = 0; // used for writing results
 	
 	public RespirationAnalyser() {
 		settings = new Settings(); // contains all variables for this analysis
@@ -70,7 +70,10 @@ public class RespirationAnalyser implements Runnable {
 		}
 	}
 
-	
+
+	/**
+	 * The thread is only run when analyzing a stream
+	 */
 	public void run() {
 		while(true) {
 			while (currentWindow.size() == 0) {
@@ -90,25 +93,6 @@ public class RespirationAnalyser implements Runnable {
 				break;
 			}
 		}
-	
-		
-		/*
-		if (type == AnalysisType.LOCAL) { // overflødig!
-			try {
-				launchLocalFile(settings.fileName);
-			} catch (MatlabInvocationException e) {
-				System.out.println("MATLAB session can not be reached");
-			}
-		}
-		else if (type == AnalysisType.STREAM) {
-			try {
-				analyseWindow(buffer);
-			} catch (MatlabInvocationException e) {
-				System.out.println("MATLAB session can not be reached");
-			}
-		}*/
-		
-		
 	}
 	
 	/**
@@ -205,15 +189,17 @@ public class RespirationAnalyser implements Runnable {
 			/* Why not just read to buffer.size() = endTime? */
 //			if (settings.intStopTime > buffer.size()) { 
 			settings.intStopTime = buffer.size();
-			engMatLab.engEvalString("endTime = " + buffer.size());
+			engMatLab.engEvalString("endTime = " + buffer.size()); // always analyse to the end of the buffer?
 //			}
 				
 			analyseResp();
+			engMatLab.engEvalString("writeResults(" + offset + ", newP, newT);");
+			offset += settings.clipLength;
 			
 			long analyseWindowStopTime = System.currentTimeMillis();
 			long endTime = analyseWindowStopTime - analyseWindowStartTime;
 			
-			history = new ArrayList<String>(settings.clipLength); // clear history list
+			 // clear history list
 			
 			System.out.println("====RESP ANALYSER: Complete analysis ms: " + endTime + "\n\t\tHistory size: " + history.size());
 			preserveHistory(buffer);
@@ -232,7 +218,8 @@ public class RespirationAnalyser implements Runnable {
 	 */
 	private List<String> loadDataIntoMatlab(List<String> buffer) {
 		stepInfo("load data, set start and end time");
-		System.out.println(history.size()+ " + " + buffer.size() + " = " + (history.size()+ buffer.size())  ); 
+		System.out.println(history.size()+ " + " + buffer.size() + " = " + (history.size()+ buffer.size())); 
+		
 		double[][] data1 = new double[1][history.size()+buffer.size()]; // convert to matlab friendly type
 		ArrayList<String> concatenated =  new ArrayList<String>(history.size()+buffer.size());
 
@@ -240,8 +227,8 @@ public class RespirationAnalyser implements Runnable {
 		
 		while (index < history.size()) {
 			try {
-				data1[0][index] = Double.parseDouble(buffer.get(index));
-				concatenated.add(buffer.get(index++));
+				data1[0][index] = Double.parseDouble(history.get(index));
+				concatenated.add(history.get(index++));
 			}
 			catch (NumberFormatException e) {
 				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
@@ -259,9 +246,10 @@ public class RespirationAnalyser implements Runnable {
 			}
 		}
 		System.out.println("Buffer to: " + index + " = TOTAL CLIP SIZE: " + history.size() + buffer.size());
-		settings.clipLength = index - 1000; // TODO
+		settings.clipLength = index; // keep track of the entire signal length
 		
 		engMatLab.engPutArray("data1", data1); // load record
+		
 		engMatLab.engEvalString("y = data1(1, :);");  // get trigger col into y in matlab
 		return concatenated;
 	}
@@ -386,8 +374,6 @@ public class RespirationAnalyser implements Runnable {
 		engMatLab.engEvalString("plotPauses(Qd, validPeaks, validTroughs, th, newP, newT);");
 	}
 	
-
-	
 	
 	/********************** UTILS ********************************/
 	
@@ -396,30 +382,44 @@ public class RespirationAnalyser implements Runnable {
 	 * the history buffer
 	 */
 	private void preserveHistory(List<String> buffer) {
+		
+		history.clear();
+		
 		double peakMax = 0;
 		double troughMax = 0;
 		
-		// DEBUG HER! virker som om vi alltid havner i else:
 		double[][] P = engMatLab.engGetArray("P");
 		double[][] T = engMatLab.engGetArray("T");
 		
 		if (P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
 		if (T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
 		
-		System.out.println("===Preserve History--->\tT MAX at i: " + (T[0].length-1) + ": "+ troughMax + " P MAX at i: " + (P[0].length-1) + " : " + peakMax);
+		System.out.println("===Preserve History--->\tTrough MAX at i: " + (T[0].length-1) + ": "+ troughMax + " P MAX at i: " + (P[0].length-1) + " : " + peakMax);
 		
-		if (peakMax > 0 || troughMax > 0) {
-			
+		if ((int)peakMax > 0 || (int)troughMax > 0) {
 			double max = (peakMax > troughMax) ? peakMax : troughMax;
 			int topIndex = (int) max * 5; // why 5? The matlab scripts decimate the signal with a factor of 5!
-			List<String> preserve = buffer.subList(topIndex, buffer.size());
-			
+			List<String> preserve = buffer.subList(topIndex, settings.intStopTime);
 			history.addAll(preserve);
+//			plotHistory(); //  
 		} else {
 //			No information retrieved from the window, try again with more info.
-//			This can be because of no
 			history.addAll(buffer); 
 		}
+	}
+
+	/**
+	 * Plots the preserved history via matlab for visual verification of the
+	 * validity of the stored values
+	 */
+	private void plotHistory() {
+		double[][] hi = new double[1][history.size()];
+		
+		for (int i = 0; i < history.size(); i++) {
+			hi[0][i] = Double.parseDouble(history.get(i));
+		}
+		engMatLab.engPutArray("hist", hi);
+		engMatLab.engEvalString("figure; plot(hist);");
 	}
 	
 	/**
