@@ -83,10 +83,7 @@ public class RespirationAnalyser implements Runnable {
 			try {
 				System.out.println("Start analysis with window: " + currentWindow.size() + " History: "+ history.size());
 				analyseWindow(currentWindow);
-				
-				currentWindow.clear();
-				System.out.println("Start analysis with window: " + currentWindow.size() + " History: "+ history.size());
-				
+				currentWindow.clear(); 
 			} catch (MatlabInvocationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -178,9 +175,8 @@ public class RespirationAnalyser implements Runnable {
 	 * Fetches clip size from shared buffer and analyzes the window
 	 */
 	public void analyseWindow(List<String> buffer) throws MatlabInvocationException {
-		long analyseWindowStartTime = System.currentTimeMillis();
-
 		
+		long analyseWindowStartTime = System.currentTimeMillis();
 		step = 1;
 		engMatLab.engEvalString("clear;");  // remove all previous information in workspace, if any
 
@@ -195,12 +191,12 @@ public class RespirationAnalyser implements Runnable {
 			/* Why not just read to buffer.size() = endTime? */
 //			if (settings.intStopTime > buffer.size()) { 
 			settings.intStopTime = buffer.size();
-			engMatLab.engEvalString("endTime = " + buffer.size()); // always analyse to the end of the buffer?
+			engMatLab.engEvalString("endTime = " + settings.intStopTime); // always analyze to the end of the buffer?
 //			}
 				
 			analyseResp();
 			engMatLab.engEvalString("writeResults(" + offset + ", newP, newT);");
-			offset += settings.clipLength;
+			offset += settings.clipLength; // /5; // Divide by five to get the index for decimated signal, or multiply with five to get the index for raw signal (1000hz)
 			
 			long analyseWindowStopTime = System.currentTimeMillis();
 			long endTime = analyseWindowStopTime - analyseWindowStartTime;
