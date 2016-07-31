@@ -30,3 +30,4 @@ Tdiffs = abs(Tdiffs);  % so all values are positive
 
 avgPI = mean(Pdiffs); avgPE = mean(Tdiffs);  % averages
 stdPI = std(Pdiffs); stdPE = std(Tdiffs);  % standard deviations
+

@@ -7,12 +7,12 @@ package no.uio.taco.pukaMatControl.pukaReduced;
  *
  */
 public class Settings {
-	public String filename;
+	public String fileName;
 	public String scriptPath;
 	
 	int sampleRate = 1000; 
 	
-	//int windowSize; 
+//	int windowSize; 
 	int clipLength = 10 * sampleRate; // 10 sec at 1000 hz
 	
 	double dblStartTime = 0;  /** time point at which the stimulus started */
@@ -23,7 +23,7 @@ public class Settings {
 	public Settings() {
 		System.out.println("Creating settings object\nScript folder: " + System.getProperty("user.dir") + "\\matlabScripts" + "\nSignal folder: " +System.getProperty("user.dir"));
 		scriptPath = System.getProperty("user.dir") + "\\matlabScripts";
-		filename = System.getProperty("user.dir") + "\\signal.txt"; // default to signal.txt in root folder
+		fileName = System.getProperty("user.dir") + "\\signal.txt"; // default to signal.txt in root folder
 	}
 	
 	public String toString() {
