@@ -8,15 +8,26 @@ function [ ] = writeResults( offset, newP, newT )
 %   imported alongside the original signal and also
 %   compared to the result of other implementaions for
 %   calculating precision and recall metrics
-    % pseudocode:
+
+%   The newP and newT is multiplied with 5 to reflect the
+%   raw signal decimation in newPT.m
     
-    peaks = newP + offset;
-    troughs = newT + offset;
+    peaks = (newP*5) + offset;
+    troughs = (newT*5) + offset;
     
-    disp(peaks);
-    disp(troughs);
+%   append to file. Make sure to delete existing files
+    peaksFile = fopen('data\peaks.txt','a');
+    troughsFile = fopen('data\troughs.txt', 'a');
+        
+    fprintf(peaksFile, '%f\n', peaks);
+    fprintf(troughsFile, '%f\n', troughs);
     
-    save('data\peaksRes.mat', 'peaks' );
-    save('data\troughRes.mat', 'troughs');
+    fclose(peaksFile);
+    fclose(troughsFile);
+    
+%   This would be preferable as we need to import it into
+%   matlab to plot and analyse the results.
+    %save('data\peakTrough.mat', 'peaks', 'troughs', '-append');
+    %save('data\.mat', 'troughs');
 end
 
