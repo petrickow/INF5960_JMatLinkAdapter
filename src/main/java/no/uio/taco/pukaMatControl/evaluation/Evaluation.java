@@ -1,6 +1,8 @@
 package no.uio.taco.pukaMatControl.evaluation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,6 +14,13 @@ class Evaluation {
 
 	public enum State{
 		TN, FP, TP, FN;
+	}
+
+	/**
+	 * TODO: what shall we call this with?
+	 */
+	public static void evaluate() {
+		
 	}
 	
 	/**
@@ -34,16 +43,11 @@ class Evaluation {
 	 * @param countTN
 	 */
 	public static void calculatePrecision(int[] result, int[] reference, int countTN) {
-		int countTP = 0;
-		int countFP = 0;
-		int countFN = 0;
 		
-		Map<Integer, State> typeMap = createEmptyTypeMap(countTN);
+		List<State> typeList = createEmptyTypeList(countTN);
 		
-		
-		setResultToFP(typeMap, result); // set all result indexes to FP
-		updateWithReference(typeMap, reference); // set 
-		
+		setResultToFP(typeList, result); // set all result indexes to FP
+		updateWithReference(typeList, reference); // set 
 		
 //		double precision = 
 	}
@@ -56,11 +60,12 @@ class Evaluation {
 	 * @param typeMap
 	 * @param resultIndexes
 	 */
-	private static void setResultToFP(Map<Integer, State> typeMap, int[] resultIndexes) {
+	private static void setResultToFP(List<State> typeList, int[] resultIndexes) {
 		for (int i = 0; i < resultIndexes.length; i++) {
-			typeMap.replace(resultIndexes[i], State.FP);
+			typeList.add(resultIndexes[i], State.FP);
+			
+//			if (typeMap.replace(resultIndexes[i], State.FP) == null) { /*TODO: Handle error*/ System.out.println("RESULT:\tError when setting FP in map with key: " + i); }
 		}
-		
 	}
 
 	/**
@@ -68,25 +73,22 @@ class Evaluation {
 	 * FALSE POSITIVE to TRUE POSITIVE, as they are a part of the reference set.
 	 * When we find indexes set to TRUE NEGATIVE, these are changed to FALSE NEGATIVE, as they
 	 * are a part of the REFERECE, but not found in the RESULT.
-	 * @param typeMap
+	 * @param typeList
 	 * @param referenceIndexes
 	 */
-	private static void updateWithReference(Map<Integer, State> typeMap, int[] referenceIndexes) {
+	private static void updateWithReference(List< State> typeList, int[] referenceIndexes) {
+		
 		for (int i = 0; i < referenceIndexes.length; i++) {
-			
-			
-			State s = typeMap.get(referenceIndexes[i]);
-			
-			switch (s) {
-			case FP: // All indexes that exist in RESULT set to FP 
-				typeMap.replace(referenceIndexes[i], State.TP);
-				break;
-			case TN: // Not found in result -> ergo a false negative since it exist in reference
-				typeMap.replace(referenceIndexes[i], State.FN);
-				break;
-			default:
-				// error!
-				break;
+			switch (typeList.get(referenceIndexes[i])) {
+				case FP: // All indexes that exist in RESULT set to FP
+					typeList.add(referenceIndexes[i], State.FP);
+					break;
+				case TN: // Not found in result -> ergo a false negative since it exist in reference
+					typeList.add(referenceIndexes[i], State.FN);
+					break;
+				default:
+					System.out.println("REF:\tError when updating index: " + i + "\nState found in list + " + typeList.get(referenceIndexes[i]));
+					break;
 			}
 		}
 	}
@@ -98,12 +100,12 @@ class Evaluation {
 	 * @param countTN - signal length
 	 * @return
 	 */
-	private static Map<Integer, State> createEmptyTypeMap(int countTN) {
-		Map<Integer, State> typeMap = new HashMap<Integer, State>();
-		for (int i = 1; i <= countTN; i++) {
-			typeMap.put(new Integer(i), State.TN);
+	private static List<State> createEmptyTypeList(int countTN) {
+		List<State> typeList = new ArrayList<State>(countTN);
+		for (int i = 0; i < countTN; i++) {
+			typeList.add(i, State.TN);
 		}
-		return typeMap;
+		return typeList;
 	}
 	
 	
