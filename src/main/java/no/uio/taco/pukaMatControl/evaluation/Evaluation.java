@@ -12,48 +12,50 @@ import java.util.Map;
  */
 class Evaluation {
 
-	public enum State{
+	private enum State{
 		TN, FP, TP, FN;
 	}
 
 	/**
-	 * TODO: what shall we call this with?
-	 */
-	public static void evaluate() {
-		
-	}
-	
-	/**
 	 * Corpus: all the potential results: all indexes in a signal
 	 * Retrieved: the results from the analysis
 	 * Relevant: reference result
-	 */
-	public static void calculateRecall(int[] result, int[] reference, int size) {
-		
-	}
-	
-
-	
-	
-	
-	/**
 	 * 
 	 * @param result
 	 * @param reference
-	 * @param countTN
+	 * @param countTN - corpus of potential results
 	 */
-	public static void calculatePrecision(int[] result, int[] reference, int countTN) {
+	public static EvaluationResult evaluateAnalysisResults(int[] result, int[] reference, int countTN) {
 		
 		List<State> typeList = createEmptyTypeList(countTN);
 		
 		setResultToFP(typeList, result); // set all result indexes to FP
 		updateWithReference(typeList, reference); // set 
+	
+		double TPcount = 0, FPcount = 0, TNcount = 0, FNcount = 0, unknown = 0;
 		
-//		double precision = 
+		for (State e : typeList) {
+			switch (e) {
+			case TP: TPcount++; break;
+			case FP: FPcount++; break;
+			case TN: TNcount++; break;
+			case FN: FNcount++; break;
+			default: unknown++; break; // debug
+			}
+		}
+		EvaluationResult e = new EvaluationResult();
+		System.out.println("Recall: TP(" + TPcount +") / (TP(" + TPcount + ") + FN(" + FNcount + ")) = " + TPcount / (TPcount + FNcount));
+
+		// how many relevant items are selected 
+		e.recall = TPcount / (TPcount + FNcount);
+		
+		//How many selected items are relevant (according to reference)
+		e.precision = TPcount / (TPcount + FPcount);
+		System.out.println("Recall: TP(" + TPcount +") / (TP(" + TPcount +") + FP(" + FPcount + ")) = " + TPcount / (TPcount + FPcount));
+		
+		System.out.println(e.precision + " " + e.recall);
+		return e;
 	}
-
-
-
 
 	/**
 	 * All indexes found in the analysis RESULT are initially set to FALSE POSITIVE
@@ -62,8 +64,7 @@ class Evaluation {
 	 */
 	private static void setResultToFP(List<State> typeList, int[] resultIndexes) {
 		for (int i = 0; i < resultIndexes.length; i++) {
-			typeList.add(resultIndexes[i], State.FP);
-			
+			typeList.set(resultIndexes[i], State.FP);
 //			if (typeMap.replace(resultIndexes[i], State.FP) == null) { /*TODO: Handle error*/ System.out.println("RESULT:\tError when setting FP in map with key: " + i); }
 		}
 	}
@@ -80,11 +81,11 @@ class Evaluation {
 		
 		for (int i = 0; i < referenceIndexes.length; i++) {
 			switch (typeList.get(referenceIndexes[i])) {
-				case FP: // All indexes that exist in RESULT set to FP
-					typeList.add(referenceIndexes[i], State.FP);
+				case FP: // All indexes that exist in RESULT set to FP - if the index exist in REFERENCES it is a TP
+					typeList.set(referenceIndexes[i], State.TP);
 					break;
 				case TN: // Not found in result -> ergo a false negative since it exist in reference
-					typeList.add(referenceIndexes[i], State.FN);
+					typeList.set(referenceIndexes[i], State.FN);
 					break;
 				default:
 					System.out.println("REF:\tError when updating index: " + i + "\nState found in list + " + typeList.get(referenceIndexes[i]));
@@ -103,7 +104,7 @@ class Evaluation {
 	private static List<State> createEmptyTypeList(int countTN) {
 		List<State> typeList = new ArrayList<State>(countTN);
 		for (int i = 0; i < countTN; i++) {
-			typeList.add(i, State.TN);
+			typeList.add(State.TN);
 		}
 		return typeList;
 	}
