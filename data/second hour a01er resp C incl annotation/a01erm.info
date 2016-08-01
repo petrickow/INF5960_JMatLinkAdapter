@@ -1,9 +1,0 @@
-Source: record apnea-ecg/a01er  Start: [01:00:00.000]
-val has 1 row (signal) and 360000 columns (samples/signal)
-Duration:  1:00:00
-Sampling frequency: 100 Hz  Sampling interval: 0.01 sec
-Row	Signal	Gain	Base	Units
-1	Resp C	20000	0	mV
-
-To convert from raw units to the physical units shown
-above, subtract 'base' and divide by 'gain'.
