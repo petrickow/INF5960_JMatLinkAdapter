@@ -1,17 +1,23 @@
 package no.uio.taco.pukaMatControl.pukaReduced;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 import com.espertech.esper.epl.join.base.HistoricalIndexLookupStrategySorted;
 
 import matlabcontrol.MatlabInvocationException;
 import no.uio.taco.pukaMatControl.matControlAdapter.JMatLinkAdapter;
+import no.uio.taco.pukaMatControl.puka.RespMeasures;
 //import org.apache.log4j.BasicConfigurator;
 //import org.apache.log4j.Logger;
+import no.uio.taco.pukaMatControl.puka.frmLoadData;
+import no.uio.taco.pukaMatControl.puka.frmPreferences;
 
 /* BIG TODO! Separate offline and online analyzer!!! */
 
@@ -29,6 +35,8 @@ public class RespirationAnalyser implements Runnable {
 	private int step = 1; // step counter for stepInfo method
 	private boolean debug = true;
 	private JMatLinkAdapter engMatLab = null;
+	private static RespMeasures rmData;
+	
 	
 	private List<String> currentWindow;
 	private Settings settings;
@@ -82,7 +90,7 @@ public class RespirationAnalyser implements Runnable {
 			
 			try {
 				System.out.println("Start analysis with window: " + currentWindow.size() + " History: "+ history.size());
-				analyseWindow(currentWindow);
+				analyseRTWindow(currentWindow);
 				currentWindow.clear(); 
 			} catch (MatlabInvocationException e) {
 				// TODO Auto-generated catch block
@@ -158,7 +166,8 @@ public class RespirationAnalyser implements Runnable {
 					+ "This step looks at the information gathered in the current clip, and has\n\t"
 					+ "to be modified in order to be used in a meaningful way for realtime analysis.\n\t"
 					+ "Look into how to extract the events, CalculateResp:596");
-//			end5 = System.nanoTime();
+			writeStatisticalInfo();
+			end5 = System.nanoTime();
 			
 			printTiming(start, end1, end2, end3, end4, end5);
 			
@@ -169,12 +178,14 @@ public class RespirationAnalyser implements Runnable {
 	}
 	
 	
+
+
 	/***************************** ONLINE PART *************************/
 
 	/**
 	 * Fetches clip size from shared buffer and analyzes the window
 	 */
-	public void analyseWindow(List<String> buffer) throws MatlabInvocationException {
+	public void analyseRTWindow(List<String> buffer) throws MatlabInvocationException {
 		
 		long analyseWindowStartTime = System.currentTimeMillis();
 		step = 1;
@@ -535,5 +546,219 @@ public class RespirationAnalyser implements Runnable {
 		
 	}
 	
+	private void writeStatisticalInfo() throws MatlabInvocationException {
+		
+		//sub does calculations in matlab on the troughs array - locations where done breathing out but not
+	    //yet started breathing in - to find basic statistics on the respiration during the stimulus
+	    double dblTemp = 0; BigDecimal jcBigDec; double dblTi = 0; double dblTtot = 0; int intSampling = 0;
+			
+		NumberFormat jcNumberFormat = NumberFormat.getInstance(Locale.US);  //set up NumberFormat for the USA
+		jcNumberFormat.setMaximumFractionDigits(4);  //only two digits after the decimal shown
+		intSampling = settings.sampleRate;
+			
+	    engMatLab.engEvalString("length(troughs);");  //# of breaths
+	    dblTemp = engMatLab.engGetScalar("ans");
+	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 13, 2);
+			
+	    engMatLab.engEvalString("min(diff(troughs));");  //shortest breath
+	    dblTemp = engMatLab.engGetScalar("ans");
+		dblTemp = dblTemp/intSampling;
+	    
+	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 14, 2);		
+			
+			engMatLab.engEvalString("max(diff(troughs));");  //longest breath
+	    dblTemp = engMatLab.engGetScalar("ans");
+			dblTemp = dblTemp/intSampling;
+	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 15, 2);
+	      
+			engMatLab.engEvalString("mean(diff(troughs));");  //average breath length
+	    dblTemp = engMatLab.engGetScalar("ans");
+	    dblTemp = 60000 / dblTemp;  
+			//tblResults.setValueAt(jcNumberFormat.format(dblTemp), 11, 2);
+				
+	    engMatLab.engEvalString("std(diff(troughs));");  //standard deviation of breath length
+	    dblTemp = engMatLab.engGetScalar("ans");
+			dblTemp = dblTemp/intSampling;
+	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 12, 2);
+			
+			//post-inspiratory & expiratory pause calculations
+	    dblTemp = engMatLab.engGetScalar("avgPI");
+			dblTemp = dblTemp/intSampling;
+	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 6, 2);
+	    
+			dblTemp = engMatLab.engGetScalar("stdPI");	
+			dblTemp = dblTemp/intSampling;
+	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 7, 2);			
+			
+			dblTemp = engMatLab.engGetScalar("avgPE");		
+			dblTemp = dblTemp/intSampling;
+	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 8, 2);
+			
+			dblTemp = engMatLab.engGetScalar("stdPE");	
+			dblTemp = dblTemp/intSampling;
+	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 9, 2);
+			
+			//total cycle time calculations
+	    dblTemp = engMatLab.engGetScalar("avgTtot");
+			dblTtot = dblTemp;  //save Ttotal in variable to calculate indpiration duty cycle later
+			dblTemp = dblTemp/intSampling;
+	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 0, 2);
+			
+	    dblTemp = engMatLab.engGetScalar("stdTtot");
+			dblTemp = dblTemp/intSampling;
+	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 1, 2);		
+			
+			//inspiration and expiration time calculations
+	      dblTemp = engMatLab.engGetScalar("avgTI");
+				dblTi = dblTemp;  //save inspiration time for inspiratory duty cycle calculation
+				dblTemp = dblTemp/intSampling;
+	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 2, 2);
+				
+				dblTemp = engMatLab.engGetScalar("stdTI");
+				dblTemp = dblTemp/intSampling;
+	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 3, 2);
+	      
+				dblTemp = engMatLab.engGetScalar("avgTE");
+				dblTemp = dblTemp/intSampling;
+	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 4, 2);
+	      
+				dblTemp = engMatLab.engGetScalar("stdTE");
+				dblTemp = dblTemp/intSampling;
+	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 5, 2);
+				
+				//inspriratory duty cycle 
+				dblTemp = dblTi/dblTtot;	
+	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 10, 2);
+    }
+
 	
+	static class RespMeasures {
+		
+		private static java.math.BigDecimal totalBreathStdDev;
+		private static java.math.BigDecimal totalBreathMean;	
+		private static java.math.BigDecimal inspTimeMean;	
+		private static java.math.BigDecimal inspTimeStdDev;
+		private static java.math.BigDecimal expTimeMean;
+		private static java.math.BigDecimal expTimeStdDev;
+		private static java.math.BigDecimal postInspPauseMean;
+		private static java.math.BigDecimal postInspPauseStdDev;
+		private static java.math.BigDecimal postExpPauseMean;
+		private static java.math.BigDecimal postExpPauseStdDev;
+		private static java.math.BigDecimal inspDutyTimeMean;
+		private static java.math.BigDecimal inspDutyTimeStdDev;
+		private static java.math.BigDecimal respRateMean;
+		private static java.math.BigDecimal respRateStdDev;
+		private static int subID;
+		private static int sessionID;
+		private static String clipID = "";
+		private static boolean bolIsValid = false;
+		private static String strComment = "";
+		private static ArrayList peakList = new ArrayList();  //list of Integers
+		private static ArrayList troughList = new ArrayList();
+		private static ArrayList peakPauseList = new ArrayList();
+		private static ArrayList troughPauseList = new ArrayList();
+		private static int intNumBreaths = 0;
+		private static java.math.BigDecimal shortestBreath;
+		private static java.math.BigDecimal longestBreath;	
+		
+		/** Creates a new instance of RespMeasures */
+		public RespMeasures() { 	}
+		
+		static void setPeakList(ArrayList peakList1) { peakList = peakList1; }
+		static ArrayList getPeakList() { return peakList; }
+		
+		static void setTroughList(ArrayList troughList1) { troughList = troughList1; }
+		static ArrayList getTroughList() { return troughList; }
+		
+		static void setPeakPauseList(ArrayList peakPauseList1) { peakPauseList = peakPauseList1; }
+		static ArrayList getPeakPauseList() { return peakPauseList; }
+		
+		static void setTroughPauseList(ArrayList troughPauseList1) { troughPauseList = troughPauseList1; }
+		static ArrayList getTroughPauseList() { return troughPauseList; }
+		
+		static void setComment(String strComment1) { strComment = strComment1; }
+		static String getComment() { return strComment; }
+		
+		static void setIsValid(boolean bolValid) { bolIsValid = bolValid; }
+		static boolean getIsValid() { return bolIsValid; }
+		
+		static void setSubID(int intSubID) { subID = intSubID; }
+		static int getSubID() { return subID; }
+		
+		static void setClipID(String strClipID) { clipID = strClipID; }
+		static String getClipID() { return clipID; }
+		
+		static void setSessionID(int intSessionID) { sessionID = intSessionID; }
+		static int getSessionID() { return sessionID; }
+		
+		static java.math.BigDecimal getTotalBreathMean() { return totalBreathMean; }
+		static void setTotalBreathMean(BigDecimal bdTotalBreathMean) { totalBreathMean = bdTotalBreathMean; }
+		
+		static java.math.BigDecimal getTotalBreathStdDev() { return totalBreathStdDev; }
+		static void setTotalBreathStdDev(BigDecimal bdTotalBreathStdDev) { totalBreathStdDev = bdTotalBreathStdDev; }
+		
+		static void setInspTimeMean(BigDecimal bdInspTimeMean) { inspTimeMean = bdInspTimeMean; }
+		static java.math.BigDecimal getInspTimeMean() { return inspTimeMean; }
+		
+		static void setInspTimeStdDev(java.math.BigDecimal bdInspTimeStdDev) { inspTimeStdDev = bdInspTimeStdDev; }
+		static java.math.BigDecimal getInspTimeStdDev() { return inspTimeStdDev; }
+		
+		static void setExpTimeMean(BigDecimal bdExpTimeMean) { expTimeMean = bdExpTimeMean; }
+		static java.math.BigDecimal getExpTimeMean() { return expTimeMean; }
+		
+		static void setExpTimeStdDev(BigDecimal bdExpTimeStdDev) { expTimeStdDev = bdExpTimeStdDev; }
+		static java.math.BigDecimal getExpTimeStdDev() { return expTimeStdDev; }
+		
+		static void setPostInspPauseMean(BigDecimal bdPass) { postInspPauseMean = bdPass; }
+		static java.math.BigDecimal getPostInspPauseMean() { return postInspPauseMean; }
+		
+		static void setPostInspPauseStdDev(BigDecimal bdPostInspPauseStdDev) { postInspPauseStdDev = bdPostInspPauseStdDev; }
+		static java.math.BigDecimal getPostInspPauseStdDev() { return postInspPauseStdDev; }
+		
+		static void setPostExpPauseMean(java.math.BigDecimal bdPostExpPauseMean) { postExpPauseMean = bdPostExpPauseMean; }
+		static java.math.BigDecimal getPostExpPauseMean() { return postExpPauseMean; }
+		
+		static void setPostExpPauseStdDev(java.math.BigDecimal bdPostExpPauseStdDev) { postExpPauseStdDev = bdPostExpPauseStdDev; }
+		static java.math.BigDecimal getPostExpPauseStdDev() { return postExpPauseStdDev; }
+		
+		static void setInspDutyTimeMean(BigDecimal bdPass) { inspDutyTimeMean = bdPass; }	
+		static java.math.BigDecimal getInspDutyTimeMean() { return inspDutyTimeMean; }
+		
+		static void setInspDutyTimeStdDev(java.math.BigDecimal bdInspDutyTimeStdDev) { inspDutyTimeStdDev = bdInspDutyTimeStdDev; }
+		static java.math.BigDecimal getInspDutyTimeStdDev() { return inspDutyTimeStdDev; }
+		
+		static void setRespRateMean(java.math.BigDecimal bdRespRateMean) { respRateMean = bdRespRateMean; }
+		static java.math.BigDecimal getRespRateMean() { return respRateMean; }
+		
+		static void setRespRateStdDev(java.math.BigDecimal bdRespRateStdDev) { respRateStdDev = bdRespRateStdDev; }
+		static java.math.BigDecimal getRespRateStdDev() { return respRateStdDev; }
+		
+		static void setNumBreaths(int intNumBreaths1) { intNumBreaths = intNumBreaths1; }
+		static int getNumBreaths() { return intNumBreaths; }
+
+		static void setShortestBreath(BigDecimal bdShortestBreath) { shortestBreath = bdShortestBreath; }	
+		static java.math.BigDecimal getShortestBreath() { return shortestBreath; }
+
+		static void setLongestBreath(BigDecimal bdLongestBreath) { longestBreath = bdLongestBreath; }	
+		static java.math.BigDecimal getLongestBreath() { return longestBreath; }
+
+		static void BlankOutValues() {
+			//set all of the things to zero
+			
+			totalBreathStdDev = new BigDecimal(0); totalBreathMean = new BigDecimal(0);	
+			inspTimeMean = new BigDecimal(0);	inspTimeStdDev = new BigDecimal(0); 
+			expTimeMean = new BigDecimal(0); expTimeStdDev = new BigDecimal(0);
+			postInspPauseMean = new BigDecimal(0); postInspPauseStdDev = new BigDecimal(0);
+			postExpPauseMean = new BigDecimal(0); postExpPauseStdDev = new BigDecimal(0); 
+			inspDutyTimeMean = new BigDecimal(0); inspDutyTimeStdDev = new BigDecimal(0); 
+			respRateMean = new BigDecimal(0); respRateStdDev = new BigDecimal(0);
+			subID = 0; sessionID = 0; clipID = ""; bolIsValid = false; strComment = "";
+			peakList = new ArrayList(); troughList = new ArrayList();
+			peakPauseList = new ArrayList(); troughPauseList = new ArrayList();
+			intNumBreaths = 0; shortestBreath = new BigDecimal(0); longestBreath = new BigDecimal(0);	
+		}
+		
+	}
 }
+
+	
