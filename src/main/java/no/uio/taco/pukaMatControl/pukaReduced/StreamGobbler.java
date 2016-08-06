@@ -37,10 +37,11 @@ public class StreamGobbler implements Runnable {
 	
 	private String fileName;
 	
+	private int windowSize = 1000;
 	private int port = 4444;
 	private String addr = "localhost";
 
-	private ByteBuffer receiveBuffer = ByteBuffer.allocate(20);
+	private ByteBuffer receiveBuffer = ByteBuffer.allocate(30);
 	RespirationAnalyser respirationAnalyser; 
 	Pattern regex;
 	
@@ -100,7 +101,7 @@ public class StreamGobbler implements Runnable {
 	private void receiveLoop(SocketChannel channel) throws IOException {
 		//long startTime = System.currentTimeMillis();
 		//long endTime = 0; 
-		log.info("Starting receive loop and analyser thread");
+		log.info("Starting receive loop and analyser thread\n===>\tWindow size: " + windowSize + "\n");
 		
 		Thread th = new Thread(respirationAnalyser);
 		th.start();
@@ -110,8 +111,9 @@ public class StreamGobbler implements Runnable {
 		for(;;) {
 			
 			String line = readFromChannel(channel);
-
 			if (line.endsWith(",400") || exitFlag) {
+				log.info("400!");
+				respirationAnalyser.signalExit();
 				channel.close();
 				log.error(line);
 				resetShell();
@@ -123,7 +125,7 @@ public class StreamGobbler implements Runnable {
 			readBuffer.addAll(splitLine);
 			//timestamps.add(TODO: implicit time stamps?)
 
-			if (readBuffer.size() == 10000) { //TODO define standard window size!
+			if (readBuffer.size() == windowSize) { //TODO define standard window size!
 				log.info("Launch respiration analysis");
 				
 				synchronized (respirationAnalyser) {
@@ -139,7 +141,7 @@ public class StreamGobbler implements Runnable {
 				
 			}
 		}
-		log.debug("Receive loop done and done!");
+		System.out.print("Receive loop done and done!\n\n\tType 'stop' to return to menu $> ");
 	}
 
 	
@@ -217,7 +219,7 @@ public class StreamGobbler implements Runnable {
 			}
 			receiveBuffer.clear();
 		}
-//		if (message.length() > 9 || message.length() < 2)
+//		if (message.length() > 9 || message.length() < 2) // clumsy debug
 //			System.out.println(message);
 		return message;
 	}
@@ -232,6 +234,7 @@ public class StreamGobbler implements Runnable {
 		if (message.endsWith("200")) {
 			// String[] split = message.split(","); // split and display connection status?
 			
+			System.out.println("Sending request for: " + fileName);
 			CharBuffer buffer = CharBuffer.wrap(fileName + ",REQ");
 			
 			while (buffer.hasRemaining()) {
@@ -267,8 +270,21 @@ public class StreamGobbler implements Runnable {
 		}
 	}
 	
+	
+	/**
+	 * Setter for filename
+	 * @param fileName: filename of signal on DataFeeder server
+	 */
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
+	}
+	
+	/**
+	 * Setter for window size 
+	 * @param windowSize: number of samples used as window
+	 */
+	public void setWindowSize(int windowSize) {
+		this.windowSize = windowSize; 
 	}
 	
 	/**

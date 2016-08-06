@@ -32,6 +32,7 @@ public class RespirationAnalyser implements Runnable {
 	}
 	public List<String> buffer;
 	
+	public boolean exitFlag;
 	private int step = 1; // step counter for stepInfo method
 	private boolean debug = true;
 	private JMatLinkAdapter engMatLab = null;
@@ -66,11 +67,12 @@ public class RespirationAnalyser implements Runnable {
 		
 		this.buffer = buffer;
 		type = AnalysisType.STREAM; // default when creating with buffer
+		exitFlag = false;
 	}
 	
 	private synchronized void holdUp() {
 		try {
-			System.out.println("Wait for buffer " + this.toString());
+			System.out.println("Wait for buffer... " + this.toString());
 			this.wait();
 			System.out.println("Done waiting: " + currentWindow.size());
 		} catch (InterruptedException e) {
@@ -87,9 +89,12 @@ public class RespirationAnalyser implements Runnable {
 			while (currentWindow.size() == 0) {
 				holdUp();
 			}
-			
 			try {
+				if (exitFlag) {
+					break;
+				}
 				System.out.println("Start analysis with window: " + currentWindow.size() + " History: "+ history.size());
+				
 				analyseRTWindow(currentWindow);
 				currentWindow.clear(); 
 			} catch (MatlabInvocationException e) {
@@ -394,8 +399,7 @@ public class RespirationAnalyser implements Runnable {
 	 * Looks for the last found event, and adds the remainder of the signal to
 	 * the history buffer
 	 */
-	private void preserveHistory(List<String> buffer) {
-		
+	private void preserveHistory(List<String> buffer) { //*TODO: check to see  that we actually has anything in the arrays
 		history.clear();
 		
 		double peakMax = 0;
@@ -493,6 +497,10 @@ public class RespirationAnalyser implements Runnable {
 		} 
 		debug = !debug;
 		return debug;
+	}
+	
+	public synchronized void signalExit() {
+		exitFlag = true;
 	}
 		
 	/**

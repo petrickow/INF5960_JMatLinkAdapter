@@ -94,16 +94,15 @@ public class Feeder implements Runnable {
     class TimerPusher extends TimerTask {
         public void run()  {
         	
-        	System.out.println("line " + currentLine + " is about to be sent");
-        	
         	long startTime = System.nanoTime();
         	
         	try {
 				send();
 		    	if (currentLine >= fileLength) {
-		    		System.out.println("counter reached max, sending 400");
 		    		timer.cancel();
-		        	CharBuffer buffer = CharBuffer.wrap("complete signal sent,400");
+		    		timer.purge();
+		    		System.out.println("counter reached max, sending 400");
+		        	CharBuffer buffer = CharBuffer.wrap("complete file sent,400");
 		            while (buffer.hasRemaining()) {
 		                clientChannel.write(Charset.defaultCharset()
 		                        .encode(buffer));
@@ -111,6 +110,8 @@ public class Feeder implements Runnable {
 		            buffer.clear();
 		            clientChannel.close();
 		    		currentLine = 0;
+		    		
+
 		    	}
 				
 //				if (sequenceNumber == fileLength) { // Send the file once 
@@ -145,7 +146,7 @@ public class Feeder implements Runnable {
     private synchronized void send() throws IOException {
     	
     	String toSend = fileContent.get(currentLine++);
-    	System.out.println("===DEBUG-Feeder currentLine->\t" + currentLine); 
+//    	System.out.println("===DEBUG-Feeder currentLine->\t" + currentLine); 
     	if (toSend.length() > 9) { // Debugging
     		System.out.println("===ERROR-Feeder->\t" + toSend); 
     	}
@@ -171,6 +172,7 @@ public class Feeder implements Runnable {
 	 */
 	private List<String> readFile(String fName) throws IOException {
 		List<String> content = Collections.synchronizedList(new ArrayList<String>()); 
+		System.out.println("===Feeder Thread--->\tReading file from: " + System.getProperty("user.dir"));
 		try (
 			    InputStream fis = new FileInputStream(System.getProperty("user.dir") + "/" + fName);
 			    InputStreamReader inputStream = new InputStreamReader(fis, Charset.forName("UTF-8"));

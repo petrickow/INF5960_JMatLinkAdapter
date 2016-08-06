@@ -222,15 +222,15 @@ public class DataFeeder {
 	 * @param clientResponse
 	 */
 	private static void handleRequest(String threadKey, SocketChannel clientChannel, String clientResponse) {
-		Feeder f = feederMap.get(threadKey);
-		Thread thf = threadList.get(Integer.valueOf(threadKey)); 
+		Feeder feeder = feederMap.get(threadKey);
+		Thread feederThread = threadList.get(Integer.valueOf(threadKey)); 
 		
-		String[] r = clientResponse.split(delimiter);
+		String[] responseArray = clientResponse.split(delimiter);
 		
-		switch (r.length) {
+		switch (responseArray.length) {
 			case 1: System.out.println("--DataFeeder->\tReturn file list"); writeToClient(getFiles(), clientChannel); break;			        		
-			case 2: System.out.println("--DataFeeder->\tOK, requested file: " + r[0]); f.setFileName(r[0]); thf.start();  break;
-			case 3: System.out.println("--DataFeeder->\tTODO: send " + r[2] + " times, instead of infinite <-- TODO");
+			case 2: System.out.println("\n--DataFeeder->\n===\n=\tOK requested file: " + responseArray[0]+"\n==="); feeder.setFileName(responseArray[0]); feederThread.start();  break;
+			case 3: System.out.println("--DataFeeder->\tTODO: send " + responseArray[2] + " times, instead of infinite <-- TODO");
 			default: System.out.println("--DataFeeder->\tERROR: unknown request size?\t " + clientResponse); break;
 		}
 	}

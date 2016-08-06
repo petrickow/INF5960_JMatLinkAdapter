@@ -35,6 +35,7 @@ public class PukaReduced {
 	static Pattern whiteSpacePattern;
 
 	RespirationAnalyser respAnalyser;
+	static int windowSize = 10000; // standard is 10 second 1000hz
 
 	public static void main(String[] args) {
 		whiteSpacePattern = Pattern.compile("\\s");
@@ -86,14 +87,23 @@ public class PukaReduced {
 
 				case "stream":
 					analysisRunning = true; 
-					respAnalyser.clean();
-					respAnalyser.setAnalysisType(RespirationAnalyser.AnalysisType.STREAM);
+					//respAnalyser.clean();
+					//respAnalyser.setAnalysisType(RespirationAnalyser.AnalysisType.STREAM);
 					StreamGobbler sg = new StreamGobbler(fName);
+					sg.setWindowSize(windowSize);
+					
 					Thread thGobbler = new Thread(sg);
 					runningGobblers.add(sg);
 					thGobbler.start();
+					
 					break;
 
+				case "window":
+					askForWindowSize();
+					String userDefinedSizeString = keyboard.nextLine().trim();
+					windowSize = checkWindowSize(userDefinedSizeString);
+					break;
+					
 				case "fname":
 					askForFileName();
 					String f = keyboard.nextLine().trim();
@@ -148,6 +158,8 @@ public class PukaReduced {
 		respAnalyser.kill();
 	}
 
+	
+
 	/**
 	 * Set the exit flag in the stream gobbler to true, asking
 	 * the thread to close the connection and reset
@@ -157,7 +169,6 @@ public class PukaReduced {
 		while (it.hasNext()) {
 			StreamGobbler sg = it.next();
 			sg.disconnect();
-			
 		}
 		runningGobblers = new ArrayList<StreamGobbler>();
 		printHelp();
@@ -169,6 +180,12 @@ public class PukaReduced {
 	private static void askForFileName() {
 		System.out.print(
 				"(white space in file name not allowed)\nType desired filename (current name: '" + fName + "')\t--> ");
+	}
+	
+	private static void askForWindowSize() {
+		System.out.print(
+				"(check samplerate of signal to find duration)\nType desired window size (current size: '" + windowSize + "')\t--> ");
+
 	}
 
 	/**
@@ -192,11 +209,28 @@ public class PukaReduced {
 		return true;
 
 	}
+	
+	/**
+	 * Parses inputstring and returns the valid integer from a string or default value if
+	 * it is not valid
+	 * @param userDefinedSizeString
+	 * @return
+	 */
+	private static int checkWindowSize(String userDefinedSizeString) {
+		try {
+			return Integer.parseInt(userDefinedSizeString.trim());
+		} catch (NumberFormatException e) {
+			return windowSize;
+		}
+		
+		
+	}
 
 	private static void printHelp() {
 		System.out.println("===pukaReduced Shell menu--->\n\t" + "run: execute puka test (using signal.txt)\n\t"
 				+ "stream: execute puka test (using data from Data Feeder-server)\n\n\t"
 
+				+ "window: set the desired window size (number of samples)\n\t"
 				+ "fname: set the desired filename to request from Data Feeder\n\t"
 				+ "debug: toggles debug print from matlabcontrol\n\n\t"
 
