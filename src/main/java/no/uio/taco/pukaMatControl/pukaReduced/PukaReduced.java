@@ -88,7 +88,6 @@ public class PukaReduced {
 				case "stream":
 					analysisRunning = true; 
 					//respAnalyser.clean();
-					//respAnalyser.setAnalysisType(RespirationAnalyser.AnalysisType.STREAM);
 					StreamGobbler sg = new StreamGobbler(fName);
 					sg.setWindowSize(windowSize);
 					
