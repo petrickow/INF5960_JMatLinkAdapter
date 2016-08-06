@@ -230,7 +230,7 @@ public class DataFeeder {
 		switch (r.length) {
 			case 1: System.out.println("--DataFeeder->\tReturn file list"); writeToClient(getFiles(), clientChannel); break;			        		
 			case 2: System.out.println("--DataFeeder->\tOK, requested file: " + r[0]); f.setFileName(r[0]); thf.start();  break;
-			case 3: System.out.println("--DataFeeder->\tTODO: send " + r[2] + " times, instead of infinite");
+			case 3: System.out.println("--DataFeeder->\tTODO: send " + r[2] + " times, instead of infinite <-- TODO");
 			default: System.out.println("--DataFeeder->\tERROR: unknown request size?\t " + clientResponse); break;
 		}
 	}

@@ -34,8 +34,8 @@ class Evaluation {
 	
 		double TPcount = 0, FPcount = 0, TNcount = 0, FNcount = 0, unknown = 0;
 		
-		for (State e : typeList) {
-			switch (e) {
+		for (State type : typeList) {
+			switch (type) {
 			case TP: TPcount++; break;
 			case FP: FPcount++; break;
 			case TN: TNcount++; break;
@@ -43,18 +43,19 @@ class Evaluation {
 			default: unknown++; break; // debug
 			}
 		}
-		EvaluationResult e = new EvaluationResult();
-		System.out.println("Recall: TP(" + TPcount +") / (TP(" + TPcount + ") + FN(" + FNcount + ")) = " + TPcount / (TPcount + FNcount));
+		EvaluationResult evalResult = new EvaluationResult();
+
 
 		// how many relevant items are selected 
-		e.recall = TPcount / (TPcount + FNcount);
+		evalResult.recall = TPcount / (TPcount + FNcount);
 		
 		//How many selected items are relevant (according to reference)
-		e.precision = TPcount / (TPcount + FPcount);
-		System.out.println("Recall: TP(" + TPcount +") / (TP(" + TPcount +") + FP(" + FPcount + ")) = " + TPcount / (TPcount + FPcount));
+		evalResult.precision = TPcount / (TPcount + FPcount);
 		
-		System.out.println(e.precision + " " + e.recall);
-		return e;
+		System.out.println("Precision: TP(" + TPcount +") / (TP(" + TPcount +") + FP(" + FPcount + ")) = " + evalResult.precision);
+		System.out.println("Recall: TP(" + TPcount +") / (TP(" + TPcount + ") + FN(" + FNcount + ")) = " + evalResult.recall);
+		
+		return evalResult;
 	}
 
 	/**

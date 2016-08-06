@@ -87,7 +87,7 @@ public class StreamGobbler implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			log.error("Communication errer: '" + e.getMessage() + "'");
+			log.error("Communication breakdown: '" + e.getMessage() + "'");
 			resetShell();
 		}
 	}
@@ -271,8 +271,9 @@ public class StreamGobbler implements Runnable {
 		this.fileName = fileName;
 	}
 	
-	
-	
+	/**
+	 * Used to exit the receive loop
+	 */
 	public synchronized void disconnect() {
 		exitFlag = true;
 	}

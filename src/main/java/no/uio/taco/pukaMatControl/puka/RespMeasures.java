@@ -1,5 +1,10 @@
 package no.uio.taco.pukaMatControl.puka;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+
 /*
  * RespMeasures.java
  *
@@ -10,7 +15,10 @@ package no.uio.taco.pukaMatControl.puka;
  * a bunch of getters and setters storing the respiratory measure data for one subject & session
  * @author  Joset A. Etzel
  */
-import java.math.BigDecimal; import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RespMeasures {
 	
@@ -138,4 +146,75 @@ public class RespMeasures {
 		intNumBreaths = 0; shortestBreath = new BigDecimal(0); longestBreath = new BigDecimal(0);	
 	}
 	
+	static boolean writeToSatisticalComputationToFile(String fName) {
+		List<String> content = getResultAsString();
+		
+		PrintWriter writer;
+		try {
+			// TODO: check file validity
+			writer = new PrintWriter(fName, "UTF-8");
+			for(String line : content) {
+				writer.println(line);
+			}
+			writer.close();
+			return true;
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	private static List<String> getResultAsString() {
+		List<String> res = new ArrayList<String>();
+		res.add("totalBreathStdDev:\t " + totalBreathStdDev.setScale(2,RoundingMode.HALF_UP).toPlainString());
+		res.add("totalBreathMean:\t " + totalBreathMean.setScale(2,RoundingMode.HALF_UP).toPlainString());
+		
+		res.add("inspTimeMean:\t " + inspTimeMean.setScale(2,RoundingMode.HALF_UP).toPlainString());
+		res.add("inspTimeStdDev:\t "+ inspTimeStdDev.setScale(2,RoundingMode.HALF_UP).toPlainString());
+		
+		res.add("expTimeMean:\t "+ expTimeMean.setScale(3,RoundingMode.HALF_UP).toPlainString());
+		res.add("expTimeStdDev:\t "+ expTimeStdDev.setScale(3,RoundingMode.HALF_UP).toPlainString());
+		
+		res.add("postInspPauseMean:\t " + postInspPauseMean.setScale(3,RoundingMode.HALF_UP).toPlainString());
+		res.add("postInspPauseStdDev:\t " + postInspPauseStdDev.setScale(3,RoundingMode.HALF_UP).toPlainString());
+		res.add("postExpPauseMean:\t " + postExpPauseMean.setScale(3,RoundingMode.HALF_UP).toPlainString());
+		res.add("postExpPauseStdDev:\t " + postExpPauseStdDev.setScale(3,RoundingMode.HALF_UP).toPlainString());
+		
+		res.add("inspDutyTimeMean:\t " +inspDutyTimeMean.setScale(4,RoundingMode.HALF_UP).toPlainString());
+		res.add("inspDutyTimeStdDev:\t " +inspDutyTimeStdDev.setScale(4,RoundingMode.HALF_UP).toPlainString());
+		
+		res.add("respRateMean:\t " +respRateMean.setScale(2,RoundingMode.HALF_UP).toPlainString());  
+		res.add("respRateStdDev:\t " +respRateStdDev.setScale(2,RoundingMode.HALF_UP).toPlainString());
+		
+		res.add("peakList:\t " + peakList.size());
+		for (Object p: peakList) {
+			Integer peak = (Integer) p; // for debugging purpose
+			res.add(peak.toString());
+		}
+		
+		res.add("toString:\t " + troughList.size());
+		for (Object t: troughList) {
+			Integer trough = (Integer) t; // for debugging purpose
+			res.add(trough.toString());
+		}
+		
+		res.add("peakPauseList:\t " + peakPauseList.size());
+		for (Object t: peakPauseList) {
+			Integer trough = (Integer) t; // for debugging purpose
+			res.add(trough.toString());
+		}
+		
+		res.add("troughPauseList:\t " + troughPauseList.size());
+		for (Object t: troughPauseList) {
+			Integer trough = (Integer) t; // for debugging purpose
+			res.add(trough.toString());
+		}
+		
+		res.add("intNumBreaths:\t " + intNumBreaths);
+		res.add("shortestBreath:\t " + shortestBreath.setScale(2,RoundingMode.HALF_UP).toPlainString());
+		res.add("longestBreath:\t " + longestBreath.setScale(2,RoundingMode.HALF_UP).toPlainString());
+		
+		return res;
+	}
 }

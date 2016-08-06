@@ -61,16 +61,13 @@ public class AdapterTests {
 	@Test
 	public void TryingToGetNonexistingScalar() {
 		MatlabInvocationException error = null;
-		double res;
 		try {
-			res = engMatLab.engGetScalar("nonExistent");
+			double res = engMatLab.engGetScalar("nonExistent");
 		} catch (MatlabInvocationException e) {
 			error = e;
 		}
 		assertNotNull(error);
-		
 	}
-	
 	
 	/**
 	 * Test that engEvalString is able to call matlab standard functions. This test uses floor() from mathworks

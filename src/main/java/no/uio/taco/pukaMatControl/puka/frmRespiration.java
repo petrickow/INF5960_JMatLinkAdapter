@@ -14,6 +14,7 @@ package no.uio.taco.pukaMatControl.puka;
 import javax.swing.table.*;
 
 import matlabcontrol.MatlabInvocationException;
+import no.uio.taco.pukaMatControl.pukaReduced.RespirationAnalyser;
 
 import java.math.BigDecimal; import javax.swing.JOptionPane;
 import java.text.NumberFormat; import java.util.Locale; import java.util.ArrayList;
@@ -594,102 +595,140 @@ public class frmRespiration extends javax.swing.JInternalFrame  {
 	}//GEN-LAST:event_cmdPausesActionPerformed
 
 	private void CalculateResp() throws MatlabInvocationException {
-		//sub does calculations in matlab on the troughs array - locations where done breathing out but not
-    //yet started breathing in - to find basic statistics on the respiration during the stimulus
-    double dblTemp = 0; BigDecimal jcBigDec; double dblTi = 0; double dblTtot = 0; int intSampling = 0;
-		
-		NumberFormat jcNumberFormat = NumberFormat.getInstance(Locale.US);  //set up NumberFormat for the USA
-		jcNumberFormat.setMaximumFractionDigits(4);  //only two digits after the decimal shown
+		// sub does calculations in matlab on the troughs array - locations
+		// where done breathing out but not
+		// yet started breathing in - to find basic statistics on the
+		// respiration during the stimulus
+		double dblTemp = 0;
+		BigDecimal jcBigDec;
+		double dblTi = 0;
+		double dblTtot = 0;
+		int intSampling = 0;
+
+		NumberFormat jcNumberFormat = NumberFormat.getInstance(Locale.US); // set
+																			// up
+																			// NumberFormat
+																			// for
+																			// the
+																			// USA
+		jcNumberFormat.setMaximumFractionDigits(4); // only two digits after the
+													// decimal shown
 		intSampling = frmPreferences.getSamplingFreq();
-		
-    frmLoadData.engMatLab.engEvalString("length(troughs);");  //# of breaths
-    dblTemp = frmLoadData.engMatLab.engGetScalar("ans");
-    tblResults.setValueAt(jcNumberFormat.format(dblTemp), 13, 2);
-		rmData.setNumBreaths((int)dblTemp);
-		
-    frmLoadData.engMatLab.engEvalString("min(diff(troughs));");  //shortest breath
-    dblTemp = frmLoadData.engMatLab.engGetScalar("ans");
-		dblTemp = dblTemp/intSampling;
-    tblResults.setValueAt(jcNumberFormat.format(dblTemp), 14, 2);		
-		jcBigDec = new BigDecimal(dblTemp); rmData.setShortestBreath(jcBigDec);
-		
-		frmLoadData.engMatLab.engEvalString("max(diff(troughs));");  //longest breath
-    dblTemp = frmLoadData.engMatLab.engGetScalar("ans");
-		dblTemp = dblTemp/intSampling;
-    tblResults.setValueAt(jcNumberFormat.format(dblTemp), 15, 2);
-		jcBigDec = new BigDecimal(dblTemp); rmData.setLongestBreath(jcBigDec);
-      
-		frmLoadData.engMatLab.engEvalString("mean(diff(troughs));");  //average breath length
-    dblTemp = frmLoadData.engMatLab.engGetScalar("ans");
-    dblTemp = 60000 / dblTemp;  
+
+		frmLoadData.engMatLab.engEvalString("length(troughs);"); // # of breaths
+		dblTemp = frmLoadData.engMatLab.engGetScalar("ans");
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 13, 2);
+		rmData.setNumBreaths((int) dblTemp);
+
+		frmLoadData.engMatLab.engEvalString("min(diff(troughs));"); // shortest
+																	// breath
+		dblTemp = frmLoadData.engMatLab.engGetScalar("ans");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 14, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setShortestBreath(jcBigDec);
+
+		frmLoadData.engMatLab.engEvalString("max(diff(troughs));"); // longest
+																	// breath
+		dblTemp = frmLoadData.engMatLab.engGetScalar("ans");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 15, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setLongestBreath(jcBigDec);
+
+		frmLoadData.engMatLab.engEvalString("mean(diff(troughs));"); // average
+																		// breath
+																		// length
+		dblTemp = frmLoadData.engMatLab.engGetScalar("ans");
+		dblTemp = 60000 / dblTemp;
 		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 11, 2);
-		jcBigDec = new BigDecimal(dblTemp); rmData.setRespRateMean(jcBigDec);
-			
-    frmLoadData.engMatLab.engEvalString("std(diff(troughs));");  //standard deviation of breath length
-    dblTemp = frmLoadData.engMatLab.engGetScalar("ans");
-		dblTemp = dblTemp/intSampling;
-    tblResults.setValueAt(jcNumberFormat.format(dblTemp), 12, 2);
-		jcBigDec = new BigDecimal(dblTemp); rmData.setRespRateStdDev(jcBigDec);
-		
-		//post-inspiratory & expiratory pause calculations
-    dblTemp = frmLoadData.engMatLab.engGetScalar("avgPI");
-		dblTemp = dblTemp/intSampling;
-    tblResults.setValueAt(jcNumberFormat.format(dblTemp), 6, 2);
-		jcBigDec = new BigDecimal(dblTemp); rmData.setPostInspPauseMean(jcBigDec);
-    
-		dblTemp = frmLoadData.engMatLab.engGetScalar("stdPI");	
-		dblTemp = dblTemp/intSampling;
-    tblResults.setValueAt(jcNumberFormat.format(dblTemp), 7, 2);			
-		jcBigDec = new BigDecimal(dblTemp); rmData.setPostInspPauseStdDev(jcBigDec);	    
-		
-		dblTemp = frmLoadData.engMatLab.engGetScalar("avgPE");		
-		dblTemp = dblTemp/intSampling;
-    tblResults.setValueAt(jcNumberFormat.format(dblTemp), 8, 2);
-		jcBigDec = new BigDecimal(dblTemp); rmData.setPostExpPauseMean(jcBigDec);			
-		
-		dblTemp = frmLoadData.engMatLab.engGetScalar("stdPE");	
-		dblTemp = dblTemp/intSampling;
-    tblResults.setValueAt(jcNumberFormat.format(dblTemp), 9, 2);
-		jcBigDec = new BigDecimal(dblTemp); rmData.setPostExpPauseStdDev(jcBigDec);
-		
-		//total cycle time calculations
-    dblTemp = frmLoadData.engMatLab.engGetScalar("avgTtot");
-		dblTtot = dblTemp;  //save Ttotal in variable to calculate indpiration duty cycle later
-		dblTemp = dblTemp/intSampling;
-    tblResults.setValueAt(jcNumberFormat.format(dblTemp), 0, 2);
-		jcBigDec = new BigDecimal(dblTemp); rmData.setTotalBreathMean(jcBigDec);				
-		
-    dblTemp = frmLoadData.engMatLab.engGetScalar("stdTtot");
-		dblTemp = dblTemp/intSampling;
-    tblResults.setValueAt(jcNumberFormat.format(dblTemp), 1, 2);		
-		jcBigDec = new BigDecimal(dblTemp); rmData.setTotalBreathStdDev(jcBigDec);
-		
-		//inspiration and expiration time calculations
-      dblTemp = frmLoadData.engMatLab.engGetScalar("avgTI");
-			dblTi = dblTemp;  //save inspiration time for inspiratory duty cycle calculation
-			dblTemp = dblTemp/intSampling;
-      tblResults.setValueAt(jcNumberFormat.format(dblTemp), 2, 2);
-			jcBigDec = new BigDecimal(dblTemp); rmData.setInspTimeMean(jcBigDec);
-			
-			dblTemp = frmLoadData.engMatLab.engGetScalar("stdTI");
-			dblTemp = dblTemp/intSampling;
-      tblResults.setValueAt(jcNumberFormat.format(dblTemp), 3, 2);
-			jcBigDec = new BigDecimal(dblTemp); rmData.setInspTimeStdDev(jcBigDec);
-      
-			dblTemp = frmLoadData.engMatLab.engGetScalar("avgTE");
-			dblTemp = dblTemp/intSampling;
-      tblResults.setValueAt(jcNumberFormat.format(dblTemp), 4, 2);
-			jcBigDec = new BigDecimal(dblTemp); rmData.setExpTimeMean(jcBigDec);
-      
-			dblTemp = frmLoadData.engMatLab.engGetScalar("stdTE");
-			dblTemp = dblTemp/intSampling;
-      tblResults.setValueAt(jcNumberFormat.format(dblTemp), 5, 2);
-			jcBigDec = new BigDecimal(dblTemp); rmData.setExpTimeStdDev(jcBigDec);
-			
-			//inspriratory duty cycle 
-			dblTemp = dblTi/dblTtot;	
-      tblResults.setValueAt(jcNumberFormat.format(dblTemp), 10, 2);
-			jcBigDec = new BigDecimal(dblTemp); rmData.setInspDutyTimeMean(jcBigDec);	
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setRespRateMean(jcBigDec);
+
+		frmLoadData.engMatLab.engEvalString("std(diff(troughs));"); // standard
+																	// deviation
+																	// of breath
+																	// length
+		dblTemp = frmLoadData.engMatLab.engGetScalar("ans");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 12, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setRespRateStdDev(jcBigDec);
+
+		// post-inspiratory & expiratory pause calculations
+		dblTemp = frmLoadData.engMatLab.engGetScalar("avgPI");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 6, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setPostInspPauseMean(jcBigDec);
+
+		dblTemp = frmLoadData.engMatLab.engGetScalar("stdPI");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 7, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setPostInspPauseStdDev(jcBigDec);
+
+		dblTemp = frmLoadData.engMatLab.engGetScalar("avgPE");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 8, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setPostExpPauseMean(jcBigDec);
+
+		dblTemp = frmLoadData.engMatLab.engGetScalar("stdPE");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 9, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setPostExpPauseStdDev(jcBigDec);
+
+		// total cycle time calculations
+		dblTemp = frmLoadData.engMatLab.engGetScalar("avgTtot");
+		dblTtot = dblTemp; // save Ttotal in variable to calculate indpiration
+							// duty cycle later
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 0, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setTotalBreathMean(jcBigDec);
+
+		dblTemp = frmLoadData.engMatLab.engGetScalar("stdTtot");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 1, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setTotalBreathStdDev(jcBigDec);
+
+		// inspiration and expiration time calculations
+		dblTemp = frmLoadData.engMatLab.engGetScalar("avgTI");
+		dblTi = dblTemp; // save inspiration time for inspiratory duty cycle
+							// calculation
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 2, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setInspTimeMean(jcBigDec);
+
+		dblTemp = frmLoadData.engMatLab.engGetScalar("stdTI");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 3, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setInspTimeStdDev(jcBigDec);
+
+		dblTemp = frmLoadData.engMatLab.engGetScalar("avgTE");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 4, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setExpTimeMean(jcBigDec);
+
+		dblTemp = frmLoadData.engMatLab.engGetScalar("stdTE");
+		dblTemp = dblTemp / intSampling;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 5, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setExpTimeStdDev(jcBigDec);
+
+		// inspriratory duty cycle
+		dblTemp = dblTi / dblTtot;
+		tblResults.setValueAt(jcNumberFormat.format(dblTemp), 10, 2);
+		jcBigDec = new BigDecimal(dblTemp);
+		rmData.setInspDutyTimeMean(jcBigDec);
+
+		RespMeasures.writeToSatisticalComputationToFile("localRespiratoryResults.txt");
     }
 	
 	private void cmdApplyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdApplyActionPerformed

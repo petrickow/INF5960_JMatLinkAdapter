@@ -47,7 +47,7 @@ public class Feeder implements Runnable {
 	 * the signals from
 	 * **/
 	public boolean setFileName(String fName) {
-		if (fName.length() == 0) {
+		if (fName.trim().length() == 0) {
 			return false;
 		}
 		fileName = fName;
@@ -60,7 +60,7 @@ public class Feeder implements Runnable {
 		cal = Calendar.getInstance();
         sdf = new SimpleDateFormat("HH:mm:ss.SSSZ");
         
-        sequenceNumber = 0;
+        currentLine = 0;
         try {
         	System.out.println("--Feeder-> init run, read file: \t" + fileName);
         	fileContent = readFile(fileName);
@@ -93,19 +93,26 @@ public class Feeder implements Runnable {
 	 */
     class TimerPusher extends TimerTask {
         public void run()  {
-    		/*If we add a shutdown hook to all of the threads, they
-    		 * are not properly cleaned up by GC */
-//    		Runtime.getRuntime().addShutdownHook(new Thread() {
-//    	        @Override
-//                public void run() {
-//            		System.out.println("TimerPusher is done"); 
-//                }
-//			});
+        	
+        	System.out.println("line " + currentLine + " is about to be sent");
         	
         	long startTime = System.nanoTime();
         	
         	try {
 				send();
+		    	if (currentLine >= fileLength) {
+		    		System.out.println("counter reached max, sending 400");
+		    		timer.cancel();
+		        	CharBuffer buffer = CharBuffer.wrap("complete signal sent,400");
+		            while (buffer.hasRemaining()) {
+		                clientChannel.write(Charset.defaultCharset()
+		                        .encode(buffer));
+		            }
+		            buffer.clear();
+		            clientChannel.close();
+		    		currentLine = 0;
+		    	}
+				
 //				if (sequenceNumber == fileLength) { // Send the file once 
 //					timer.cancel();
 //					timer.purge();
@@ -137,12 +144,8 @@ public class Feeder implements Runnable {
 	 */
     private synchronized void send() throws IOException {
     	
-    	if (currentLine >= fileLength) {
-    		currentLine = 0;
-    	}
-    	
     	String toSend = fileContent.get(currentLine++);
-
+    	System.out.println("===DEBUG-Feeder currentLine->\t" + currentLine); 
     	if (toSend.length() > 9) { // Debugging
     		System.out.println("===ERROR-Feeder->\t" + toSend); 
     	}
