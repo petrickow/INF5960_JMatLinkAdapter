@@ -84,10 +84,8 @@ public class Feeder implements Runnable {
 	}
 	
 	/***************************
-	 * Timed task to run the serving
+	 * Timed task to run for serving one tuple of respiration data
 	 * 
-	 * TODO, find out why these internal classes are not 
-	 * cleared from the heap... potential memory leak
 	 * @author Cato Danielsen
 	 *
 	 */

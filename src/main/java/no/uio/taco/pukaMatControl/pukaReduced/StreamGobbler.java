@@ -37,7 +37,7 @@ public class StreamGobbler implements Runnable {
 	
 	private String fileName;
 	
-	private int windowSize = 1000;
+	private int windowSize = 10000;
 	private int port = 4444;
 	private String addr = "localhost";
 
@@ -114,6 +114,9 @@ public class StreamGobbler implements Runnable {
 			if (line.endsWith(",400") || exitFlag) {
 				log.info("400!");
 				respirationAnalyser.signalExit();
+				temp.addAll(readBuffer); // analyse the last chunk
+				respirationAnalyser.setBuffer(temp);
+				respirationAnalyser.notifyAll();
 				channel.close();
 				log.error(line);
 				resetShell();
@@ -133,12 +136,10 @@ public class StreamGobbler implements Runnable {
 					temp.addAll(readBuffer);
 					respirationAnalyser.setBuffer(temp);
 					respirationAnalyser.notifyAll();
-					
 				}
 				// create new list for new arrivals
 				temp = new ArrayList<String>(readBuffer.size());
 				readBuffer.clear(); 	// = Collections.synchronizedList(new ArrayList<String>(respirationAnalyser.getClipLength()));
-				
 			}
 		}
 		System.out.print("Receive loop done and done!\n\n\tType 'stop' to return to menu $> ");

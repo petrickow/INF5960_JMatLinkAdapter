@@ -90,13 +90,14 @@ public class RespirationAnalyser implements Runnable {
 				holdUp();
 			}
 			try {
-				if (exitFlag) {
-					break;
-				}
+				
 				System.out.println("Start analysis with window: " + currentWindow.size() + " History: "+ history.size());
 				
 				analyseRTWindow(currentWindow);
-				currentWindow.clear(); 
+				currentWindow.clear();
+				if (exitFlag) {
+					break;
+				}
 			} catch (MatlabInvocationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -263,7 +264,7 @@ public class RespirationAnalyser implements Runnable {
 				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
 			}
 		}
-		System.out.println("Buffer to: " + index + " = TOTAL CLIP SIZE: " + history.size() + buffer.size());
+		System.out.println("Buffer to: " + index + " = TOTAL CLIP SIZE: " + history.size() + " + " + buffer.size());
 		settings.clipLength = index; // keep track of the entire signal length
 		
 		engMatLab.engPutArray("data1", data1); // load record
@@ -411,14 +412,13 @@ public class RespirationAnalyser implements Runnable {
 		if (P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
 		if (T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
 		
-		System.out.println("===Preserve History--->\tTrough MAX at i: " + (T[0].length-1) + ": "+ troughMax + " P MAX at i: " + (P[0].length-1) + " : " + peakMax);
+		//System.out.println("===Preserve History--->\tTrough MAX at i: " + (T[0].length-1) + ": "+ troughMax + " P MAX at i: " + (P[0].length-1) + " : " + peakMax);
 		
 		if ((int)peakMax > 0 || (int)troughMax > 0) {
 			double max = (peakMax > troughMax) ? peakMax : troughMax;
 			int topIndex = (int) max * 5; // why 5? The matlab scripts decimate the signal with a factor of 5!
 			List<String> preserve = buffer.subList(topIndex, settings.intStopTime);
 			history.addAll(preserve);
-//			plotHistory(); //  
 		} else {
 //			No information retrieved from the window, try again with more info.
 			history.addAll(buffer); 
