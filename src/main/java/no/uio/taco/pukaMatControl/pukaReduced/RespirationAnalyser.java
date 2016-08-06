@@ -1,23 +1,14 @@
 package no.uio.taco.pukaMatControl.pukaReduced;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-import java.util.function.Consumer;
 
-import com.espertech.esper.epl.join.base.HistoricalIndexLookupStrategySorted;
 
 import matlabcontrol.MatlabInvocationException;
 import no.uio.taco.pukaMatControl.matControlAdapter.JMatLinkAdapter;
-import no.uio.taco.pukaMatControl.puka.RespMeasures;
 //import org.apache.log4j.BasicConfigurator;
 //import org.apache.log4j.Logger;
-import no.uio.taco.pukaMatControl.puka.frmLoadData;
-import no.uio.taco.pukaMatControl.puka.frmPreferences;
 
 /* BIG TODO! Separate offline and online analyzer!!! */
 
@@ -167,7 +158,7 @@ public class RespirationAnalyser implements Runnable {
 					+ "This step looks at the information gathered in the current clip, and has\n\t"
 					+ "to be modified in order to be used in a meaningful way for realtime analysis.\n\t"
 					+ "Look into how to extract the events, CalculateResp:596");
-			writeStatisticalInfo();
+//			writeStatisticalInfo();
 			end5 = System.nanoTime();
 			
 			printTiming(start, end1, end2, end3, end4, end5);
@@ -541,6 +532,7 @@ public class RespirationAnalyser implements Runnable {
 		
 	}
 	
+	/*
 	private void writeStatisticalInfo() throws MatlabInvocationException {
 		
 		//sub does calculations in matlab on the troughs array - locations where done breathing out but not
@@ -624,7 +616,7 @@ public class RespirationAnalyser implements Runnable {
 				//inspriratory duty cycle 
 				dblTemp = dblTi/dblTtot;	
 	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 10, 2);
-    }
+    }*/
 
 	
 	private void postAnalysisEvaluation() {

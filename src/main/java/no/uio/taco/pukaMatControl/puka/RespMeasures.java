@@ -167,14 +167,14 @@ public class RespMeasures {
 
 	private static List<String> getResultAsString() {
 		List<String> res = new ArrayList<String>();
-		res.add("totalBreathStdDev:\t " + totalBreathStdDev.setScale(2,RoundingMode.HALF_UP).toPlainString());
-		res.add("totalBreathMean:\t " + totalBreathMean.setScale(2,RoundingMode.HALF_UP).toPlainString());
+		res.add("totalBreathStdDev:\t " + totalBreathStdDev.setScale(2,RoundingMode.HALF_UP).toPlainString()); // Ttotal - std dev
+		res.add("totalBreathMean:\t " + totalBreathMean.setScale(2,RoundingMode.HALF_UP).toPlainString()); // Ttotal mean
 		
-		res.add("inspTimeMean:\t " + inspTimeMean.setScale(2,RoundingMode.HALF_UP).toPlainString());
-		res.add("inspTimeStdDev:\t "+ inspTimeStdDev.setScale(2,RoundingMode.HALF_UP).toPlainString());
+		res.add("inspTimeMean:\t " + inspTimeMean.setScale(2,RoundingMode.HALF_UP).toPlainString()); // Ti - mean
+		res.add("inspTimeStdDev:\t "+ inspTimeStdDev.setScale(2,RoundingMode.HALF_UP).toPlainString()); // Ti std dev
 		
-		res.add("expTimeMean:\t "+ expTimeMean.setScale(3,RoundingMode.HALF_UP).toPlainString());
-		res.add("expTimeStdDev:\t "+ expTimeStdDev.setScale(3,RoundingMode.HALF_UP).toPlainString());
+		res.add("expTimeMean:\t "+ expTimeMean.setScale(3,RoundingMode.HALF_UP).toPlainString()); // Te - mean
+		res.add("expTimeStdDev:\t "+ expTimeStdDev.setScale(3,RoundingMode.HALF_UP).toPlainString()); // Te - std dev
 		
 		res.add("postInspPauseMean:\t " + postInspPauseMean.setScale(3,RoundingMode.HALF_UP).toPlainString());
 		res.add("postInspPauseStdDev:\t " + postInspPauseStdDev.setScale(3,RoundingMode.HALF_UP).toPlainString());
