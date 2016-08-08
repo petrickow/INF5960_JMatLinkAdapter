@@ -10,7 +10,7 @@ import java.util.Map;
  * in the thesis. 
  * @author Cato Danielsen
  */
-class Evaluation {
+public class Evaluation {
 
 	private enum State{
 		TN, FP, TP, FN;
@@ -30,7 +30,8 @@ class Evaluation {
 		List<State> typeList = createEmptyTypeList(countTN);
 		
 		setResultToFP(typeList, result); // set all result indexes to FP
-		updateWithReference(typeList, reference); // set 
+		System.out.println(typeList.size());
+		updateWithReference(typeList, reference); // set references to either TP or FN 
 	
 		double TPcount = 0, FPcount = 0, TNcount = 0, FNcount = 0, unknown = 0;
 		
@@ -66,7 +67,6 @@ class Evaluation {
 	private static void setResultToFP(List<State> typeList, int[] resultIndexes) {
 		for (int i = 0; i < resultIndexes.length; i++) {
 			typeList.set(resultIndexes[i], State.FP);
-//			if (typeMap.replace(resultIndexes[i], State.FP) == null) { /*TODO: Handle error*/ System.out.println("RESULT:\tError when setting FP in map with key: " + i); }
 		}
 	}
 
@@ -81,6 +81,10 @@ class Evaluation {
 	private static void updateWithReference(List< State> typeList, int[] referenceIndexes) {
 		
 		for (int i = 0; i < referenceIndexes.length; i++) {
+			if (i > 0 && referenceIndexes[i] == referenceIndexes[i - 1]) {
+				continue;
+			}
+			System.out.println("at " + referenceIndexes[i] + " we have " + typeList.get(referenceIndexes[i]));
 			switch (typeList.get(referenceIndexes[i])) {
 				case FP: // All indexes that exist in RESULT set to FP - if the index exist in REFERENCES it is a TP
 					typeList.set(referenceIndexes[i], State.TP);
@@ -89,10 +93,11 @@ class Evaluation {
 					typeList.set(referenceIndexes[i], State.FN);
 					break;
 				default:
-					System.out.println("REF:\tError when updating index: " + i + "\nState found in list + " + typeList.get(referenceIndexes[i]));
+					System.out.println("REF:\tError when updating index: " + referenceIndexes[i] + "\nState found in list + " + typeList.get(referenceIndexes[i]));
 					break;
 			}
 		}
+		
 	}
 
 	
@@ -106,6 +111,7 @@ class Evaluation {
 		List<State> typeList = new ArrayList<State>(countTN);
 		for (int i = 0; i < countTN; i++) {
 			typeList.add(State.TN);
+			
 		}
 		return typeList;
 	}

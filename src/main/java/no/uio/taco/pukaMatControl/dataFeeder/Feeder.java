@@ -96,7 +96,7 @@ public class Feeder implements Runnable {
         	
         	try {
 				send();
-		    	if (currentLine >= fileLength) {
+		    	if (currentLine >= 30000) { //
 		    		timer.cancel();
 		    		timer.purge();
 		    		System.out.println("counter reached max, sending 400");
@@ -128,8 +128,8 @@ public class Feeder implements Runnable {
 			}
         	
         	long endTime = System.nanoTime();
-        	long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-        	float msDuration = (float) duration/1000000;
+        	long duration = (endTime - startTime); 
+        	float msDuration = (float) duration*1000000;
         	
 //        	System.out.println(endTime + " - " + startTime + "\t=\tDuration ms: " + msDuration ); // TODO: log instead of print.
         }

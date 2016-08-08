@@ -1,11 +1,17 @@
 package no.uio.taco.pukaMatControl.pukaReduced;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 
 import matlabcontrol.MatlabInvocationException;
+import no.uio.taco.pukaMatControl.evaluation.*;
 import no.uio.taco.pukaMatControl.matControlAdapter.JMatLinkAdapter;
 //import org.apache.log4j.BasicConfigurator;
 //import org.apache.log4j.Logger;
@@ -192,12 +198,13 @@ public class RespirationAnalyser implements Runnable {
 //		double onsetTime = engMatLab.engGetScalar("onsetTime");
 		if (setOnset()) { 
 			/* Why not just read to buffer.size() = endTime? */
-//			if (settings.intStopTime > buffer.size()) { 
-			settings.intStopTime = buffer.size();
-			engMatLab.engEvalString("endTime = " + settings.intStopTime); // always analyze to the end of the buffer?
-//			}
+			if (settings.intStopTime > buffer.size()) { 
+				settings.intStopTime = buffer.size();
+//			engMatLab.engEvalString("endTime = " + settings.intStopTime); // always analyze to the end of the buffer?
+			}
 				
 			analyseResp();
+
 			engMatLab.engEvalString("writeResults(" + offset + ", newP, newT);");
 			offset += settings.clipLength; // /5; // Divide by five to get the index for decimated signal, or multiply with five to get the index for raw signal (1000hz)
 			
@@ -212,7 +219,7 @@ public class RespirationAnalyser implements Runnable {
 			
 		} else {
 			history.addAll(buffer);
-			System.out.println("====RESP ANALYSER: Failed to find OnsetTime in signal\n\t"
+			System.out.println("====RESP ANALYSER: Failed to find OnsetTime in signal?\n\t"
 					+ "Window too small?\n\t"
 					+ "Long respiration halt?");
 		}
@@ -321,11 +328,11 @@ public class RespirationAnalyser implements Runnable {
 
 //		if findOnset returns a time of -1 then it was unable to locate a good onset time
 		if ((int)dblTemp < 0) { 
-			System.out.println("not able to get a good onset!");  
+			System.out.println("===setOnset()-->\tnot able to set onset!");  
 			return false; 
 		}  
 		else {
-			System.out.println("===setOnset()--->: " + (int)dblTemp);
+			System.out.println("===setOnset()-->: " + (int)dblTemp);
 			settings.intStartTime = (int)dblTemp;  //assign start time to public variable
 
 //			TODO: add check to make sure we do not exceed the buffer.size
@@ -619,9 +626,122 @@ public class RespirationAnalyser implements Runnable {
     }*/
 
 	
+	
+	/**
+	 * reads the reference file and the complete result file from
+	 * the RT analysis and runs the evalutaion  
+	 */
 	private void postAnalysisEvaluation() {
+		// read peaks
+		int[] result = new int[0];
+		int[] reference = new int[0];
 		
+		try {
+			Path path = FileSystems.getDefault().getPath("matlabScripts", "data", "peaks.txt");
+			List<String> peaksRes = new ArrayList<String>();
+			peaksRes = Files.readAllLines(path, StandardCharsets.UTF_8);
+			
+			path = FileSystems.getDefault().getPath("matlabScripts", "data", "troughs.txt");
+			List<String> troughsRes = new ArrayList<String>();
+			troughsRes = Files.readAllLines(path, StandardCharsets.UTF_8);
+
+			if (peaksRes.size() > 0 && troughsRes.size() > 0) {
+				int[] p = new int[peaksRes.size()];
+				for (int i = 0; i < p.length; i++) {
+					p[i] = Integer.valueOf(peaksRes.get(i));
+				}
+
+				int[] t = new int[troughsRes.size()];
+				for (int i = 0; i < p.length; i++) {
+					t[i] = Integer.valueOf(troughsRes.get(i));
+				}
+
+				result = merge(p, t);
+			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		// read references
+		try {
+			Path path = FileSystems.getDefault().getPath("matlabScripts", "data", "pCleanRef.txt");
+			List<String> peaksRef = new ArrayList<String>();
+			peaksRef = Files.readAllLines(path, StandardCharsets.UTF_8);
+			
+			path = FileSystems.getDefault().getPath("matlabScripts", "data", "tCleanRef.txt");
+			List<String> troughsRef = new ArrayList<String>();
+			troughsRef = Files.readAllLines(path, StandardCharsets.UTF_8);
+
+			if (peaksRef.size() > 0 && troughsRef.size() > 0) {
+
+				int[] p = new int[peaksRef.size()];
+				for (int i = 0; i < p.length; i++) {
+					p[i] = Integer.valueOf(peaksRef.get(i));
+				}
+
+				int[] t = new int[troughsRef.size()];
+				for (int i = 0; i < p.length; i++) {
+					t[i] = Integer.valueOf(troughsRef.get(i));
+				}
+
+				reference = merge(p, t);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if (reference.length > 0 && result.length > 0) {
+			EvaluationResult er = Evaluation.evaluateAnalysisResults(result, reference, offset);
+			System.out.println(er.toString());
+		}
 	}
+	
+	
+	/**
+	 * Merge two integer arrays and sort while doing so
+	 * @param a
+	 * @param b
+	 * @return concatenated array
+	 */
+	private int[] merge(int[] a, int[] b) {
+	    int[] answer = new int[a.length + b.length];
+	    int i = 0, j = 0, k = 0;
+	    while (i < a.length && j < b.length)
+	    {
+	        if (a[i] < b[j])
+	        {
+	            answer[k] = a[i];
+	            i++;
+	        }
+	        else
+	        {
+	            answer[k] = b[j];
+	            j++;
+	        }
+	        k++;
+	    }
+
+	    while (i < a.length)
+	    {
+	        answer[k] = a[i];
+	        i++;
+	        k++;
+	    }
+
+	    while (j < b.length)
+	    {
+	        answer[k] = b[j];
+	        j++;
+	        k++;
+	    }
+
+	    return answer;
+	}
+	
 }
 
 	

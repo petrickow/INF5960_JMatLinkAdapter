@@ -12,7 +12,7 @@ thisTrough = 0; nextPeak = 0; prevPeak = 0;
 
 numPeaks = max(size(validPeaks));  % # of valid peaks after classifyPeaks.m
 numTroughs = max(size(validTroughs));
-disp('mofo!');
+
 for i = 1:numTroughs
     thisTrough = validTroughs(i);  % going to find the pause size for this trough
     if validPeaks(1) < validTroughs(1)    % peak-first signal

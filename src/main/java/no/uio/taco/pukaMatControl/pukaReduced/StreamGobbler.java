@@ -115,8 +115,10 @@ public class StreamGobbler implements Runnable {
 				log.info("400!");
 				respirationAnalyser.signalExit();
 				temp.addAll(readBuffer); // analyse the last chunk
-				respirationAnalyser.setBuffer(temp);
-				respirationAnalyser.notifyAll();
+				synchronized (respirationAnalyser) {
+					respirationAnalyser.setBuffer(temp);
+					respirationAnalyser.notifyAll();
+				}
 				channel.close();
 				log.error(line);
 				resetShell();
