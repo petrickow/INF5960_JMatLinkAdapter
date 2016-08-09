@@ -1,3 +1,4 @@
+% VERISON --> TARGET, USED BY ORIGINAL PUKA
 function [ ] = writeResults( offset, newP, newT )
 %WRITERESULTS Summary of this function goes here
 %   This script is called after an analysis window
@@ -21,8 +22,8 @@ function [ ] = writeResults( offset, newP, newT )
     
     disp(pwd); 
     
-    fprintf(peaksFile, '%f\n', peaks);
-    fprintf(troughsFile, '%f\n', troughs);
+    fprintf(peaksFile, '%d\n', peaks);
+    fprintf(troughsFile, '%d\n', troughs);
     
     fclose(peaksFile);
     fclose(troughsFile);

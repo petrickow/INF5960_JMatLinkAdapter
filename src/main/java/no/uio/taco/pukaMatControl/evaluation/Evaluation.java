@@ -35,15 +35,19 @@ public class Evaluation {
 		updateWithReference(typeList, reference); // set references to either TP or FN 
 	
 		double TPcount = 0, FPcount = 0, TNcount = 0, FNcount = 0, unknown = 0;
-		
+		int c = 0;
 		for (State type : typeList) {
 			switch (type) {
+			
 			case TP: TPcount++; break;
 			case FP: FPcount++; break;
 			case TN: TNcount++; break;
 			case FN: FNcount++; break;
 			default: unknown++; break; // debug
+			
+			
 			}
+			c++;
 		}
 		EvaluationResult evalResult = new EvaluationResult();
 
@@ -66,9 +70,23 @@ public class Evaluation {
 	 * @param resultIndexes
 	 */
 	private static void setResultToFP(List<State> typeList, int[] resultIndexes) {
+		System.out.println(resultIndexes[0] + " <-----------------");
+		System.out.println(typeList.get(0) + " <-----------------");
 		for (int i = 0; i < resultIndexes.length; i++) {
+			if (resultIndexes[i] == 0)
+			{
+				
+				System.out.println(resultIndexes.length + " at: " + i + "  whoot?");
+			}
+			
+			if (i > 0  && resultIndexes[i] == resultIndexes[i -1]) {
+				continue;
+			}
 			typeList.set(resultIndexes[i], State.FP);
 		}
+		int count = 0;
+		System.out.println(typeList.get(0) + " <-----------------");
+
 	}
 
 	/**
@@ -84,11 +102,13 @@ public class Evaluation {
 		for (int i = 0; i < referenceIndexes.length; i++) {
 			
 			if (i > 0 && referenceIndexes[i] == referenceIndexes[i - 1]) { // when there is no pause, set it once
+				System.out.println("Single point, no pause detected");
 				continue; 
 			}
 
 			switch (typeList.get(referenceIndexes[i])) {
 				case FP: // All indexes that exist in RESULT set to FP - if the index exist in REFERENCES it is a TP
+					System.out.println("What?! " + i + " " + referenceIndexes[i] + " " + typeList.get(referenceIndexes[i]));
 					typeList.set(referenceIndexes[i], State.TP);
 					break;
 				case TN: // Not found in result -> ergo a false negative since it exist in reference
@@ -115,6 +135,7 @@ public class Evaluation {
 			typeList.add(State.TN);
 			
 		}
+
 		return typeList;
 	}
 	

@@ -21,8 +21,8 @@ function [ ] = writeResults( offset, newP, newT )
     
     disp(pwd); 
     
-    fprintf(peaksFile, '%f\n', peaks);
-    fprintf(troughsFile, '%f\n', troughs);
+    fprintf(peaksFile, '%d\n', peaks);
+    fprintf(troughsFile, '%d\n', troughs);
     
     fclose(peaksFile);
     fclose(troughsFile);

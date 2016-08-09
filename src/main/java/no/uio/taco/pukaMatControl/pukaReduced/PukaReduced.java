@@ -58,7 +58,6 @@ public class PukaReduced {
 		 * analysis. When using a stream, each analysis is executed in a
 		 * separate thread, while for local we use the blocking method, as no
 		 * user input is received during
-		 * 
 		 */
 		RespirationAnalyser respAnalyser = new RespirationAnalyser();
 		String input = "";
@@ -149,7 +148,6 @@ public class PukaReduced {
 					break;
 				default:
 					System.out.println("what?");
-					
 				}
 			}
 		}
@@ -184,7 +182,6 @@ public class PukaReduced {
 	private static void askForWindowSize() {
 		System.out.print(
 				"(check samplerate of signal to find duration)\nType desired window size (current size: '" + windowSize + "')\t--> ");
-
 	}
 
 	/**
@@ -206,7 +203,6 @@ public class PukaReduced {
 			return false;
 		}
 		return true;
-
 	}
 	
 	/**
@@ -221,12 +217,10 @@ public class PukaReduced {
 		} catch (NumberFormatException e) {
 			return windowSize;
 		}
-		
-		
 	}
 
 	private static void printHelp() {
-		System.out.println("===pukaReduced Shell menu--->\n\t" + "run: execute puka test (using signal.txt)\n\t"
+		System.out.println("===pukaReduced Shell menu--->\n\t" + "run: execute puka test (using '" + fName + "')\n\t"
 				+ "stream: execute puka test (using data from Data Feeder-server)\n\n\t"
 
 				+ "window: set the desired window size (number of samples)\n\t"

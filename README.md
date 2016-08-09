@@ -8,10 +8,15 @@ with matlabcontrol-library in order to be able to run on/with 64-bit windows/MAT
 Prerequisites for vanilla puka:
 -------------------------------
 
-WFDB library and software installed for cygwin:
+WFDB library and software installed for cygwin (WIP):
 -----------------------------------------------
+* For cygwin packages required, see
 * convertecg.c compiled with gcc convertecg.c -lwfdb -o convertecg
 * ecgpuwave-1.3.2 requires fortran compiler for cygwin.
+
+* Simplest solution is to run the ''frmMain'' as Java application from Eclipse
+* Alternately package as jar as launch
+ 
 
 Useful links
 -----------
@@ -21,13 +26,3 @@ Useful links
 * [Puka](https://www.physionet.org/physiotools/puka/)
 
 
-TODO List:
-------------
-PRI: Finish tests, asserting that all type convertions are done
-properly
-
-Make it so that errors in preferences does not result in the
-deletion of the preferences file!
-
-Now that we have preferences, try adding valid clips. Reformat
-the samples file so that we have a valid clip.

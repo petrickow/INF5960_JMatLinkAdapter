@@ -123,49 +123,50 @@ public class RespirationAnalyser implements Runnable {
 			 * Step 1, load data, set start and end time
 			 */
 			
-			stepInfo("load data, set start and end time");
-			start = System.nanoTime();
+//			stepInfo("load data, set start and end time");
+			
+			start = System.currentTimeMillis();
 			loadFile(textDataFile);
 			
 			/* TODO, should this be in here or in analyseResp()? AND
 			it should be modified to work automatically, that is if it does not
 			find onset time, we need to do some magic*/
 			setOnset();
-			end1 = System.nanoTime();
+			end1 = System.currentTimeMillis();
 			
 			
 			/**
 			 * Step 2, peak detection, find peaks and trough 
 			 */
-			stepInfo("peak detection");
+//			stepInfo("peak detection");
 			peakDetection();
 			
-			end2 = System.nanoTime();
+			end2 = System.currentTimeMillis();
 			/**
 			 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
 			 */
-			stepInfo("classify peaks");
+//			stepInfo("classify peaks");
 			classifyPeaks();
 			
-			end3 = System.nanoTime();
+			end3 = System.currentTimeMillis();
 			/**
 			 * Step 4,
 			 */
-			stepInfo("pause detection:\n\t"
-					+ "Uses matlab again to detect the start and end point of the pause around the peak");
+//			stepInfo("pause detection:\n\t"
+//					+ "Uses matlab again to detect the start and end point of the pause around the peak");
 			pauseDetection();
 			
-			end4 = System.nanoTime();
+			end4 = System.currentTimeMillis();
 			
 			/**
 			 * Step 5, statistical calculation 
 			 */
-			stepInfo("statistical calculation:\n\t"
-					+ "This step looks at the information gathered in the current clip, and has\n\t"
-					+ "to be modified in order to be used in a meaningful way for realtime analysis.\n\t"
-					+ "Look into how to extract the events, CalculateResp:596");
+//			stepInfo("statistical calculation:\n\t"
+//					+ "This step looks at the information gathered in the current clip, and has\n\t"
+//					+ "to be modified in order to be used in a meaningful way for realtime analysis.\n\t"
+//					+ "Look into how to extract the events, CalculateResp:596");
 //			writeStatisticalInfo();
-			end5 = System.nanoTime();
+			end5 = System.currentTimeMillis();
 			
 			printTiming(start, end1, end2, end3, end4, end5);
 			
@@ -521,7 +522,23 @@ public class RespirationAnalyser implements Runnable {
 	}
 
 	private void printTiming(long start, long end1, long end2, long end3, long end4, long end5) {
-		// TODO Auto-generated method stub
+		System.out.println("======== ANALYSIS TIMING =================="
+				+ "\n" + start 
+				+ "\n" + end1
+				+ "\n" + end2
+				+ "\n" + end3
+				+ "\n" + end4
+				+ "\n" + end5);
+		
+		System.out.println("Step 1: " + (end1-start) + "ms");
+		System.out.println("Step 2: " + (end2-end1) + "ms");
+		System.out.println("Step 3: " + (end3-end2)+ "ms");
+		System.out.println("Step 4: " + (end4-end3) + "ms");
+		System.out.println("Step 5: " + (end5-end4) + "ms");
+		
+		System.out.println("-----------------\nTotal time: " + (end5-start) + "ms");
+		
+		//TODO: store each run
 	}
 
 
@@ -535,93 +552,6 @@ public class RespirationAnalyser implements Runnable {
 //		subsequent iterations	
 		
 	}
-	
-	/*
-	private void writeStatisticalInfo() throws MatlabInvocationException {
-		
-		//sub does calculations in matlab on the troughs array - locations where done breathing out but not
-	    //yet started breathing in - to find basic statistics on the respiration during the stimulus
-	    double dblTemp = 0; BigDecimal jcBigDec; double dblTi = 0; double dblTtot = 0; int intSampling = 0;
-			
-		NumberFormat jcNumberFormat = NumberFormat.getInstance(Locale.US);  //set up NumberFormat for the USA
-		jcNumberFormat.setMaximumFractionDigits(4);  //only two digits after the decimal shown
-		intSampling = settings.sampleRate;
-			
-	    engMatLab.engEvalString("length(troughs);");  //# of breaths
-	    dblTemp = engMatLab.engGetScalar("ans");
-	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 13, 2);
-			
-	    engMatLab.engEvalString("min(diff(troughs));");  //shortest breath
-	    dblTemp = engMatLab.engGetScalar("ans");
-		dblTemp = dblTemp/intSampling;
-	    
-	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 14, 2);		
-			
-			engMatLab.engEvalString("max(diff(troughs));");  //longest breath
-	    dblTemp = engMatLab.engGetScalar("ans");
-			dblTemp = dblTemp/intSampling;
-	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 15, 2);
-	      
-			engMatLab.engEvalString("mean(diff(troughs));");  //average breath length
-	    dblTemp = engMatLab.engGetScalar("ans");
-	    dblTemp = 60000 / dblTemp;  
-			//tblResults.setValueAt(jcNumberFormat.format(dblTemp), 11, 2);
-				
-	    engMatLab.engEvalString("std(diff(troughs));");  //standard deviation of breath length
-	    dblTemp = engMatLab.engGetScalar("ans");
-			dblTemp = dblTemp/intSampling;
-	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 12, 2);
-			
-			//post-inspiratory & expiratory pause calculations
-	    dblTemp = engMatLab.engGetScalar("avgPI");
-			dblTemp = dblTemp/intSampling;
-	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 6, 2);
-	    
-			dblTemp = engMatLab.engGetScalar("stdPI");	
-			dblTemp = dblTemp/intSampling;
-	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 7, 2);			
-			
-			dblTemp = engMatLab.engGetScalar("avgPE");		
-			dblTemp = dblTemp/intSampling;
-	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 8, 2);
-			
-			dblTemp = engMatLab.engGetScalar("stdPE");	
-			dblTemp = dblTemp/intSampling;
-	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 9, 2);
-			
-			//total cycle time calculations
-	    dblTemp = engMatLab.engGetScalar("avgTtot");
-			dblTtot = dblTemp;  //save Ttotal in variable to calculate indpiration duty cycle later
-			dblTemp = dblTemp/intSampling;
-	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 0, 2);
-			
-	    dblTemp = engMatLab.engGetScalar("stdTtot");
-			dblTemp = dblTemp/intSampling;
-	    //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 1, 2);		
-			
-			//inspiration and expiration time calculations
-	      dblTemp = engMatLab.engGetScalar("avgTI");
-				dblTi = dblTemp;  //save inspiration time for inspiratory duty cycle calculation
-				dblTemp = dblTemp/intSampling;
-	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 2, 2);
-				
-				dblTemp = engMatLab.engGetScalar("stdTI");
-				dblTemp = dblTemp/intSampling;
-	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 3, 2);
-	      
-				dblTemp = engMatLab.engGetScalar("avgTE");
-				dblTemp = dblTemp/intSampling;
-	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 4, 2);
-	      
-				dblTemp = engMatLab.engGetScalar("stdTE");
-				dblTemp = dblTemp/intSampling;
-	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 5, 2);
-				
-				//inspriratory duty cycle 
-				dblTemp = dblTi/dblTtot;	
-	      //tblResults.setValueAt(jcNumberFormat.format(dblTemp), 10, 2);
-    }*/
-
 	
 	
 	/**

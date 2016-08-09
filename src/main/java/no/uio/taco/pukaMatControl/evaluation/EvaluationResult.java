@@ -6,6 +6,6 @@ public class EvaluationResult {
 	
 	
 	public String toString() {
-		return "P: " +precision + " R: " + recall;
+		return "Precision: " +precision + "\nRecall: " + recall;
 	}
 }

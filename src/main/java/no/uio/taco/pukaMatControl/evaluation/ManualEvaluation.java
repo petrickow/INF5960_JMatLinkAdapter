@@ -12,7 +12,6 @@ public class ManualEvaluation {
 
 	public static void main(String[] args) {
 		
-		
 		postAnalysisEvaluation();
 	}
 	
@@ -35,14 +34,12 @@ public class ManualEvaluation {
 				 
 				int[] p = new int[peaksRes.size()];
 				for (int i = 0; i < p.length; i++) {
-					double d = Double.valueOf(peaksRes.get(i));
-					p[i] = (int) d;
+					p[i] = Integer.valueOf(peaksRes.get(i));
 				}
 
 				int[] t = new int[troughsRes.size()];
-				for (int i = 0; i < p.length; i++) {
-					double d = Double.valueOf(troughsRes.get(i));
-					t[i] = (int) d; 
+				for (int i = 0; i < t.length; i++) {
+					t[i] = Integer.valueOf(troughsRes.get(i));
 				}
 
 				result = merge(p, t);
@@ -56,11 +53,11 @@ public class ManualEvaluation {
 		
 		// read references
 		try {
-			Path path = FileSystems.getDefault().getPath("matlabScripts", "data", "pCleanRef.txt");
+			Path path = FileSystems.getDefault().getPath("matlabScripts", "data", "reduPeaks.txt");
 			List<String> peaksRef = new ArrayList<String>();
 			peaksRef = Files.readAllLines(path, StandardCharsets.UTF_8);
 			
-			path = FileSystems.getDefault().getPath("matlabScripts", "data", "pCleanRef.txt");
+			path = FileSystems.getDefault().getPath("matlabScripts", "data", "reduTroughs.txt");
 			List<String> troughsRef = new ArrayList<String>();
 			troughsRef = Files.readAllLines(path, StandardCharsets.UTF_8);
 
@@ -68,14 +65,12 @@ public class ManualEvaluation {
 
 				int[] p = new int[peaksRef.size()];
 				for (int i = 0; i < p.length; i++) {
-					double d = Double.valueOf(peaksRef.get(i));
-					p[i] = (int) d;
+					p[i]  = Integer.valueOf(peaksRef.get(i));
 				}
 
 				int[] t = new int[troughsRef.size()];
-				for (int i = 0; i < p.length; i++) {
-					double d = Double.valueOf(troughsRef.get(i));
-					t[i] = (int) d; 
+				for (int i = 0; i < t.length; i++) {
+					t[i] = Integer.valueOf(troughsRef.get(i));
 				}
 
 				reference = merge(p, t);
@@ -86,6 +81,7 @@ public class ManualEvaluation {
 		}
 		
 		if (reference.length > 0 && result.length > 0) {
+			System.out.println(reference.length + " " + result.length);
 			EvaluationResult er = Evaluation.evaluateAnalysisResults(result, reference, 30000);
 			System.out.println(er.toString());
 		}
@@ -128,6 +124,8 @@ public class ManualEvaluation {
 	        k++;
 	    }
 
+	    System.out.println("a: " + a.length + "b: " + b.length + " = " + answer.length);
 	    return answer;
+	    
 	}
 }
