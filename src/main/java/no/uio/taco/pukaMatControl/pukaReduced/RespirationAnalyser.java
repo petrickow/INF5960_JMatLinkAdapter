@@ -191,7 +191,7 @@ public class RespirationAnalyser implements Runnable {
 
 		/* STEP 1: Load data */
 		buffer = loadDataIntoMatlab(buffer);
-		System.out.println("===analyseWindow-->\tTOTAL SIZE (including history): " + buffer.size());
+//		System.out.println("===analyseWindow-->\tTOTAL SIZE (including history): " + buffer.size());
 		/* STEP 1 cont:  find onset */
 		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
 	
@@ -206,7 +206,7 @@ public class RespirationAnalyser implements Runnable {
 			analyseResp();
 
 			engMatLab.engEvalString("writeResults(" + offset + ", newP, newT);");
-			offset += settings.clipLength; // /5; // Divide by five to get the index for decimated signal, or multiply with five to get the index for raw signal (1000hz)
+			offset += settings.clipLength - history.size(); // due to the history elements we need to move the offset for the detected events back by the history size
 			
 			long analyseWindowStopTime = System.currentTimeMillis();
 			long endTime = analyseWindowStopTime - analyseWindowStartTime;
@@ -230,7 +230,6 @@ public class RespirationAnalyser implements Runnable {
 	 */
 	private List<String> loadDataIntoMatlab(List<String> buffer) {
 		stepInfo("load data, set start and end time");
-		System.out.println(history.size()+ " + " + buffer.size() + " = " + (history.size()+ buffer.size())); 
 		
 		double[][] data1 = new double[1][history.size()+buffer.size()]; // convert to matlab friendly type
 		ArrayList<String> concatenated =  new ArrayList<String>(history.size()+buffer.size());
@@ -247,8 +246,6 @@ public class RespirationAnalyser implements Runnable {
 			}
 		}
 		
-		System.out.print("History to: " + index + " ...");
-		
 		for (int bufferIndex = 0; index < (history.size() + buffer.size()); index++) {
 			try {
 				data1[0][index] = Double.parseDouble(buffer.get(bufferIndex));
@@ -257,7 +254,7 @@ public class RespirationAnalyser implements Runnable {
 				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
 			}
 		}
-		System.out.println("Buffer to: " + index + " = TOTAL CLIP SIZE: " + history.size() + " + " + buffer.size());
+//		System.out.println("Buffer to: " + index + " = TOTAL CLIP SIZE: " + history.size() + " + " + buffer.size());
 		settings.clipLength = index; // keep track of the entire signal length
 		
 		engMatLab.engPutArray("data1", data1); // load record
@@ -646,14 +643,17 @@ public class RespirationAnalyser implements Runnable {
 			troughsRes = Files.readAllLines(path, StandardCharsets.UTF_8);
 
 			if (peaksRes.size() > 0 && troughsRes.size() > 0) {
+				 
 				int[] p = new int[peaksRes.size()];
 				for (int i = 0; i < p.length; i++) {
-					p[i] = Integer.valueOf(peaksRes.get(i));
+					double d = Double.valueOf(peaksRes.get(i));
+					p[i] = (int) d;
 				}
 
 				int[] t = new int[troughsRes.size()];
 				for (int i = 0; i < p.length; i++) {
-					t[i] = Integer.valueOf(troughsRes.get(i));
+					double d = Double.valueOf(troughsRes.get(i));
+					t[i] = (int) d; 
 				}
 
 				result = merge(p, t);
@@ -671,7 +671,7 @@ public class RespirationAnalyser implements Runnable {
 			List<String> peaksRef = new ArrayList<String>();
 			peaksRef = Files.readAllLines(path, StandardCharsets.UTF_8);
 			
-			path = FileSystems.getDefault().getPath("matlabScripts", "data", "tCleanRef.txt");
+			path = FileSystems.getDefault().getPath("matlabScripts", "data", "pCleanRef.txt");
 			List<String> troughsRef = new ArrayList<String>();
 			troughsRef = Files.readAllLines(path, StandardCharsets.UTF_8);
 
@@ -679,12 +679,14 @@ public class RespirationAnalyser implements Runnable {
 
 				int[] p = new int[peaksRef.size()];
 				for (int i = 0; i < p.length; i++) {
-					p[i] = Integer.valueOf(peaksRef.get(i));
+					double d = Double.valueOf(peaksRef.get(i));
+					p[i] = (int) d;
 				}
 
 				int[] t = new int[troughsRef.size()];
 				for (int i = 0; i < p.length; i++) {
-					t[i] = Integer.valueOf(troughsRef.get(i));
+					double d = Double.valueOf(troughsRef.get(i));
+					t[i] = (int) d; 
 				}
 
 				reference = merge(p, t);
@@ -695,7 +697,7 @@ public class RespirationAnalyser implements Runnable {
 		}
 		
 		if (reference.length > 0 && result.length > 0) {
-			EvaluationResult er = Evaluation.evaluateAnalysisResults(result, reference, offset);
+			EvaluationResult er = Evaluation.evaluateAnalysisResults(result, reference, 30000);
 			System.out.println(er.toString());
 		}
 	}

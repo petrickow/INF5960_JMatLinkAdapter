@@ -16,8 +16,8 @@ function [ ] = writeResults( offset, newP, newT )
     troughs = (newT*5) + offset;
     
 %   append to file. Make sure to delete existing files
-    peaksFile = fopen('data\pCleanRef.txt','a');
-    troughsFile = fopen('data\tCleanRef.txt', 'a');
+    peaksFile = fopen('data\reduPeaks.txt','a');
+    troughsFile = fopen('data\reduTroughs.txt', 'a');
     
     disp(pwd); 
     

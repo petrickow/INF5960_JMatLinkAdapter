@@ -44,6 +44,7 @@ public class StreamGobbler implements Runnable {
 	private ByteBuffer receiveBuffer = ByteBuffer.allocate(30);
 	RespirationAnalyser respirationAnalyser; 
 	Pattern regex;
+	int lineCount = 0; 
 	
 	/**
 	 * Constructor creates logger, a shared buffer which will be passed to 
@@ -112,7 +113,7 @@ public class StreamGobbler implements Runnable {
 			
 			String line = readFromChannel(channel);
 			if (line.endsWith(",400") || exitFlag) {
-				log.info("400!");
+				log.info("400! Total Line Count:" + lineCount);
 				respirationAnalyser.signalExit();
 				temp.addAll(readBuffer); // analyse the last chunk
 				synchronized (respirationAnalyser) {
@@ -127,6 +128,7 @@ public class StreamGobbler implements Runnable {
 			
 			/* Need to double check that we only have one entry pr line */
 			Collection<String> splitLine = checkResult(line);
+			lineCount += splitLine.size();
 			readBuffer.addAll(splitLine);
 			//timestamps.add(TODO: implicit time stamps?)
 

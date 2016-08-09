@@ -54,7 +54,6 @@ public class Feeder implements Runnable {
 		return true;
 	}
 	
-	
 	@Override
 	public void run() {
 		cal = Calendar.getInstance();

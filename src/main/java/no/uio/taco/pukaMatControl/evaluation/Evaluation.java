@@ -27,10 +27,11 @@ public class Evaluation {
 	 */
 	public static EvaluationResult evaluateAnalysisResults(int[] result, int[] reference, int countTN) {
 		
+		/* Specific for precision and recall*/
 		List<State> typeList = createEmptyTypeList(countTN);
 		
+		 
 		setResultToFP(typeList, result); // set all result indexes to FP
-		System.out.println(typeList.size());
 		updateWithReference(typeList, reference); // set references to either TP or FN 
 	
 		double TPcount = 0, FPcount = 0, TNcount = 0, FNcount = 0, unknown = 0;
@@ -81,10 +82,11 @@ public class Evaluation {
 	private static void updateWithReference(List< State> typeList, int[] referenceIndexes) {
 		
 		for (int i = 0; i < referenceIndexes.length; i++) {
-			if (i > 0 && referenceIndexes[i] == referenceIndexes[i - 1]) {
-				continue;
+			
+			if (i > 0 && referenceIndexes[i] == referenceIndexes[i - 1]) { // when there is no pause, set it once
+				continue; 
 			}
-			System.out.println("at " + referenceIndexes[i] + " we have " + typeList.get(referenceIndexes[i]));
+
 			switch (typeList.get(referenceIndexes[i])) {
 				case FP: // All indexes that exist in RESULT set to FP - if the index exist in REFERENCES it is a TP
 					typeList.set(referenceIndexes[i], State.TP);
