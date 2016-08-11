@@ -1,0 +1,107 @@
+======================================
+//debug true with step info
+Initial run:
+=================
+Step 1: 1544ms
+Step 2: 503ms
+Step 3: 157ms
+Step 4: 220ms
+Step 5: 0ms
+-----------------
+Total time: 2424ms
+
+Run 2:
+Step 1: 128ms
+Step 2: 46ms
+Step 3: 63ms
+Step 4: 127ms
+Step 5: 0ms
+-----------------
+Total time: 364ms
+
+Run 3:
+Step 1: 145ms
+Step 2: 31ms
+Step 3: 65ms
+Step 4: 125ms
+Step 5: 0ms
+-----------------
+Total time: 366ms
+
+======================================
+// Debug false with step info
+Step 1: 828ms
+Step 2: 554ms
+Step 3: 223ms
+Step 4: 218ms
+Step 5: 0ms
+-----------------
+Total time: 1823ms
+
+Step 1: 121ms
+Step 2: 62ms
+Step 3: 94ms
+Step 4: 172ms
+Step 5: 0ms
+-----------------
+Total time: 449ms
+
+Step 1: 142ms
+Step 2: 46ms
+Step 3: 71ms
+Step 4: 124ms
+Step 5: 0ms
+-----------------
+Total time: 383ms
+
+======================================
+// debug true -> removed step info
+Step 1: 574ms
+Step 2: 538ms
+Step 3: 206ms
+Step 4: 293ms
+Step 5: 0ms
+-----------------
+Total time: 1611ms
+
+Step 1: 112ms
+Step 2: 49ms
+Step 3: 130ms
+Step 4: 156ms
+Step 5: 0ms
+-----------------
+Total time: 447ms
+
+Step 1: 144ms
+Step 2: 32ms
+Step 3: 62ms
+Step 4: 125ms
+Step 5: 0ms
+-----------------
+Total time: 363ms
+
+======================================
+// debug false -> removed step info
+Step 1: 733ms
+Step 2: 630ms
+Step 3: 183ms
+Step 4: 203ms
+Step 5: 0ms
+-----------------
+Total time: 1749ms
+
+Step 1: 140ms
+Step 2: 47ms
+Step 3: 104ms
+Step 4: 140ms
+Step 5: 0ms
+-----------------
+Total time: 431ms
+
+Step 1: 148ms
+Step 2: 31ms
+Step 3: 78ms
+Step 4: 125ms
+Step 5: 0ms
+-----------------
+Total time: 382ms

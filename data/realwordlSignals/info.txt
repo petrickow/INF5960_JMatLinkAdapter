@@ -1,0 +1,31 @@
+
+Selected input: record ucddb/ucddb014.rec (Sum) , from [05:28:29.000 02/01/2002] to [05:29:29.000 02/01/2002]
+Selected input: record ucddb/ucddb014.rec (Sum) , from [05:29:29.000 02/01/2002] to [05:30:29.000 02/01/2002]
+
+	-------
+                              Respiratory Event List
+        Respiratory Event           Desaturation   Snore Arousal     B/T
+ Time       Type   PB/CS  Duration  Low    %Drop                 Rate  Change
+
+
+05:28:38  HYP-C             26       91.8    4.1     -     -              
+05:29:18  APNEA-O           12       91.8    4.1     -     -
+
+
+	------
+	128hz
+
+120 sekunder * 128 samples pr sekund = 15360 samples for 2 minutes
+
+
+	------
+	amplitude
+
+>> max(data1)
+ans =
+    1.7740
+
+>> min(data1)
+ans =
+   -1.8680
+
