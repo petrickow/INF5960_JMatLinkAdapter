@@ -116,7 +116,7 @@ public class RespirationAnalyser implements Runnable {
 		
 		
 		if (textDataFile.exists()) {
-			long start, end1, end2, end3, end4, end5 = 0;
+			long start, end0, end1, end2, end3, end4, end5 = 0;
 			startMatlab();
 			step = 1;
 			/**
@@ -128,10 +128,16 @@ public class RespirationAnalyser implements Runnable {
 			start = System.currentTimeMillis();
 			loadFile(textDataFile);
 			
+			engMatLab.engEvalString("y = smooth(y);"); 
+			
+			engMatLab.engEvalString("onsetTime = findOnset(y);");
+					
 			/* TODO, should this be in here or in analyseResp()? AND
 			it should be modified to work automatically, that is if it does not
 			find onset time, we need to do some magic*/
 			setOnset();
+			
+			
 			end1 = System.currentTimeMillis();
 			
 			
@@ -194,7 +200,6 @@ public class RespirationAnalyser implements Runnable {
 		buffer = loadDataIntoMatlab(buffer);
 //		System.out.println("===analyseWindow-->\tTOTAL SIZE (including history): " + buffer.size());
 		/* STEP 1 cont:  find onset */
-		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
 	
 //		double onsetTime = engMatLab.engGetScalar("onsetTime");
 		if (setOnset()) { 
@@ -279,7 +284,6 @@ public class RespirationAnalyser implements Runnable {
 		
 //		log.debug("Change MATLAB folder to script path: " + settings.scriptPath);
 		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
-		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
 	}
 	
 	/**
@@ -313,7 +317,10 @@ public class RespirationAnalyser implements Runnable {
 	 * in the respiration analysis
 	 */
 	private boolean setOnset() {
+		
 		double dblTemp = -1;
+		
+		engMatLab.engEvalString("onsetTime = 0;");  //run function, put result in intNew //findOnset(y)
 
 		try{
 			dblTemp = engMatLab.engGetScalar("onsetTime");  //get the stimulus onset time point
@@ -581,7 +588,7 @@ public class RespirationAnalyser implements Runnable {
 				}
 
 				int[] t = new int[troughsRes.size()];
-				for (int i = 0; i < p.length; i++) {
+				for (int i = 0; i < t.length; i++) {
 					double d = Double.valueOf(troughsRes.get(i));
 					t[i] = (int) d; 
 				}
@@ -614,7 +621,7 @@ public class RespirationAnalyser implements Runnable {
 				}
 
 				int[] t = new int[troughsRef.size()];
-				for (int i = 0; i < p.length; i++) {
+				for (int i = 0; i < t.length; i++) {
 					double d = Double.valueOf(troughsRef.get(i));
 					t[i] = (int) d; 
 				}
