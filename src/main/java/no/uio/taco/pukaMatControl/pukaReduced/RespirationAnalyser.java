@@ -243,10 +243,10 @@ public class RespirationAnalyser implements Runnable {
 			 // clear history list
 			
 			System.out.println("====RESP ANALYSER: Complete analysis ms: " + endTime + "\n\t\tHistory size: " + history.size());
-			//preserveHistory(buffer);
+			preserveHistory(buffer);
 
 			
-			offset += settings.clipLength /*- history.size()*/; // due to the history elements we need to move the offset for the detected events back by the history size
+			offset += settings.clipLength - history.size(); // due to the history elements we need to move the offset for the detected events back by the history size
 
 			//System.out.println("====History preserved: " + history.size());
 			
@@ -264,11 +264,11 @@ public class RespirationAnalyser implements Runnable {
 	private List<String> loadDataIntoMatlab(List<String> buffer) {
 		stepInfo("load data, set start and end time");
 		
-		double[][] data1 = new double[1][/*history.size()+*/buffer.size()]; // convert to matlab friendly type
-		ArrayList<String> concatenated =  new ArrayList<String>(/*history.size()+*/buffer.size());
+		double[][] data1 = new double[1][history.size() + buffer.size()]; // convert to matlab friendly type
+		ArrayList<String> concatenated =  new ArrayList<String>(history.size() + buffer.size());
 
 		int index = 0;
-		/*
+		
 		while (index < history.size()) {
 			try {
 				data1[0][index] = Double.parseDouble(history.get(index));
@@ -278,7 +278,7 @@ public class RespirationAnalyser implements Runnable {
 				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
 			}
 		}
-		*/
+		
 		for (int bufferIndex = 0; index < (/*history.size() +*/ buffer.size()); index++) {
 			try {
 				data1[0][index] = Double.parseDouble(buffer.get(bufferIndex));
@@ -410,9 +410,10 @@ public class RespirationAnalyser implements Runnable {
 		double[][] P = engMatLab.engGetArray("P");
 		double[][] T = engMatLab.engGetArray("T");
 		
-		if (P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
-		if (T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
-		
+		if (P != null && T != null) {
+			if (P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
+			if (T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
+		}
 		//System.out.println("===Preserve History--->\tTrough MAX at i: " + (T[0].length-1) + ": "+ troughMax + " P MAX at i: " + (P[0].length-1) + " : " + peakMax);
 		
 		if ((int)peakMax > 0 || (int)troughMax > 0) {

@@ -35,7 +35,7 @@ public class PukaReduced {
 	static Pattern whiteSpacePattern;
 
 	RespirationAnalyser respAnalyser;
-	static int windowSize = 10000; // standard is 10 second 1000hz
+	static int windowSize = 5000; // standard is 10 second 1000hz
 
 	public static void main(String[] args) {
 		whiteSpacePattern = Pattern.compile("\\s");
@@ -223,7 +223,7 @@ public class PukaReduced {
 		System.out.println("===pukaReduced Shell menu--->\n\t" + "run: execute puka test (using '" + fName + "')\n\t"
 				+ "stream: execute puka test (using data from Data Feeder-server)\n\n\t"
 
-				+ "window: set the desired window size (number of samples)\n\t"
+				+ "window: set the desired window size (default: "+ windowSize + " samples)\n\t"
 				+ "fname: set the desired filename to request from Data Feeder\n\t"
 				+ "debug: toggles debug print from matlabcontrol\n\n\t"
 
