@@ -1,3 +1,10 @@
+/*
+ * TODO
+ * Separate stream and file-based analysis, create a separate class for each to avoid changes interfering
+ * Initialize Log4j properly
+ * 
+ */
+
 package no.uio.taco.pukaMatControl.pukaReduced;
 
 import java.io.File;
@@ -131,7 +138,7 @@ public class RespirationAnalyser implements Runnable {
 			/* TODO, should this be in here or in analyseResp()? AND
 			it should be modified to work automatically, that is if it does not
 			find onset time, we need to do some magic*/
-			setOnset();
+			checkOnset();
 			end1 = System.currentTimeMillis();
 			
 			
@@ -191,13 +198,13 @@ public class RespirationAnalyser implements Runnable {
 		engMatLab.engEvalString("clear;");  // remove all previous information in workspace, if any
 
 		/* STEP 1: Load data */
-		buffer = loadDataIntoMatlab(buffer);
-//		System.out.println("===analyseWindow-->\tTOTAL SIZE (including history): " + buffer.size());
-		/* STEP 1 cont:  find onset */
-		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
+		buffer = loadDataIntoMatlab(buffer); // we now know the size of the window, set start and end time
+
+		/* STEP 1 cont:  find onset Brute Force */
+		engMatLab.engEvalString("onsetTime = 1");  // MATLAB uses 1 indexed arrays
 	
-//		double onsetTime = engMatLab.engGetScalar("onsetTime");
-		if (setOnset()) { 
+//		checks onset time and calculates endtime based on buffersize
+		if (checkOnset()) { 
 			/* Why not just read to buffer.size() = endTime? */
 			if (settings.intStopTime > buffer.size()) { 
 				settings.intStopTime = buffer.size();
@@ -207,7 +214,6 @@ public class RespirationAnalyser implements Runnable {
 			analyseResp();
 
 			engMatLab.engEvalString("writeResults(" + offset + ", newP, newT);");
-			offset += settings.clipLength - history.size(); // due to the history elements we need to move the offset for the detected events back by the history size
 			
 			long analyseWindowStopTime = System.currentTimeMillis();
 			long endTime = analyseWindowStopTime - analyseWindowStartTime;
@@ -216,6 +222,10 @@ public class RespirationAnalyser implements Runnable {
 			
 			System.out.println("====RESP ANALYSER: Complete analysis ms: " + endTime + "\n\t\tHistory size: " + history.size());
 			preserveHistory(buffer);
+
+			
+			offset += settings.clipLength - history.size(); // due to the history elements we need to move the offset for the detected events back by the history size
+
 			System.out.println("====History preserved: " + history.size());
 			
 		} else {
@@ -312,7 +322,7 @@ public class RespirationAnalyser implements Runnable {
 	 * set start and end time for the clip used
 	 * in the respiration analysis
 	 */
-	private boolean setOnset() {
+	private boolean checkOnset() {
 		double dblTemp = -1;
 
 		try{
@@ -581,7 +591,7 @@ public class RespirationAnalyser implements Runnable {
 				}
 
 				int[] t = new int[troughsRes.size()];
-				for (int i = 0; i < p.length; i++) {
+				for (int i = 0; i < t.length; i++) {
 					double d = Double.valueOf(troughsRes.get(i));
 					t[i] = (int) d; 
 				}
@@ -614,7 +624,7 @@ public class RespirationAnalyser implements Runnable {
 				}
 
 				int[] t = new int[troughsRef.size()];
-				for (int i = 0; i < p.length; i++) {
+				for (int i = 0; i < t.length; i++) {
 					double d = Double.valueOf(troughsRef.get(i));
 					t[i] = (int) d; 
 				}
