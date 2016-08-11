@@ -95,7 +95,7 @@ public class Feeder implements Runnable {
         	
         	try {
 				send();
-		    	if (currentLine >= 30000) { //
+		    	if (currentLine >= 16999) { //
 		    		timer.cancel();
 		    		timer.purge();
 		    		System.out.println("counter reached max, sending 400");

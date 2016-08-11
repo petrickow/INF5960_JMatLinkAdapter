@@ -183,6 +183,27 @@ public class RespirationAnalyser implements Runnable {
 		
 	}
 	
+	/**
+	 * Initiate respiration analysis. MATLAB session has to be running,
+	 */
+	private void analyseResp() {
+		/*
+		 * Step 2, peak detection, find peaks and trough 
+		 */
+		stepInfo("peak detection");
+		peakDetection();
+		/*
+		 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
+		 */
+		stepInfo("classify peaks");
+		classifyPeaks();
+		/*
+		 * Step 4,
+		 */
+		stepInfo("pause detection:\n\t"
+				+ "Uses matlab again to detect the start and end point of the pause around the peak");
+		pauseDetection();
+	}
 	
 
 
@@ -201,10 +222,11 @@ public class RespirationAnalyser implements Runnable {
 		buffer = loadDataIntoMatlab(buffer); // we now know the size of the window, set start and end time
 
 		/* STEP 1 cont:  find onset Brute Force */
-		engMatLab.engEvalString("onsetTime = 1");  // MATLAB uses 1 indexed arrays
+		engMatLab.engEvalString("onsetTime = 1;");  // MATLAB uses 1 indexed arrays ///findOnset(y)
 	
 //		checks onset time and calculates endtime based on buffersize
-		if (checkOnset()) { 
+		if (checkOnset()) {
+			
 			/* Why not just read to buffer.size() = endTime? */
 			if (settings.intStopTime > buffer.size()) { 
 				settings.intStopTime = buffer.size();
@@ -221,12 +243,12 @@ public class RespirationAnalyser implements Runnable {
 			 // clear history list
 			
 			System.out.println("====RESP ANALYSER: Complete analysis ms: " + endTime + "\n\t\tHistory size: " + history.size());
-			preserveHistory(buffer);
+			//preserveHistory(buffer);
 
 			
-			offset += settings.clipLength - history.size(); // due to the history elements we need to move the offset for the detected events back by the history size
+			offset += settings.clipLength /*- history.size()*/; // due to the history elements we need to move the offset for the detected events back by the history size
 
-			System.out.println("====History preserved: " + history.size());
+			//System.out.println("====History preserved: " + history.size());
 			
 		} else {
 			history.addAll(buffer);
@@ -242,11 +264,11 @@ public class RespirationAnalyser implements Runnable {
 	private List<String> loadDataIntoMatlab(List<String> buffer) {
 		stepInfo("load data, set start and end time");
 		
-		double[][] data1 = new double[1][history.size()+buffer.size()]; // convert to matlab friendly type
-		ArrayList<String> concatenated =  new ArrayList<String>(history.size()+buffer.size());
+		double[][] data1 = new double[1][/*history.size()+*/buffer.size()]; // convert to matlab friendly type
+		ArrayList<String> concatenated =  new ArrayList<String>(/*history.size()+*/buffer.size());
 
 		int index = 0;
-		
+		/*
 		while (index < history.size()) {
 			try {
 				data1[0][index] = Double.parseDouble(history.get(index));
@@ -256,8 +278,8 @@ public class RespirationAnalyser implements Runnable {
 				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
 			}
 		}
-		
-		for (int bufferIndex = 0; index < (history.size() + buffer.size()); index++) {
+		*/
+		for (int bufferIndex = 0; index < (/*history.size() +*/ buffer.size()); index++) {
 			try {
 				data1[0][index] = Double.parseDouble(buffer.get(bufferIndex));
 				concatenated.add(buffer.get(bufferIndex++));
@@ -290,28 +312,6 @@ public class RespirationAnalyser implements Runnable {
 //		log.debug("Change MATLAB folder to script path: " + settings.scriptPath);
 		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
 		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
-	}
-	
-	/**
-	 * Initiate respiration analysis. MATLAB session has to be running,
-	 */
-	private void analyseResp() {
-		/*
-		 * Step 2, peak detection, find peaks and trough 
-		 */
-		stepInfo("peak detection");
-		peakDetection();
-		/*
-		 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
-		 */
-		stepInfo("classify peaks");
-		classifyPeaks();
-		/*
-		 * Step 4,
-		 */
-		stepInfo("pause detection:\n\t"
-				+ "Uses matlab again to detect the start and end point of the pause around the peak");
-		pauseDetection();
 	}
 	
 	
@@ -368,7 +368,7 @@ public class RespirationAnalyser implements Runnable {
 //		engMatLab.engEvalString("plot(y, 'm');");  //show the respiration signal so can check it
 		
 //		got the graph ready Do the Peak detection // TODO Swap .1 with param
-		engMatLab.engEvalString("[P,T,th,Qd] = newPT(y, .1, onsetTime, endTime)");
+		engMatLab.engEvalString("[P,T,th,Qd] = newPT(y, .1, onsetTime, endTime);");
 	}
 	
 	/**
@@ -521,6 +521,10 @@ public class RespirationAnalyser implements Runnable {
 	 */
 	public int getClipLength() {
 		return settings.clipLength;
+	}
+	
+	public void setClipLength(int clipLength) {
+		settings.clipLength = clipLength;
 	}
 	
 	/** 
