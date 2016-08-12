@@ -229,6 +229,7 @@ public class RespirationAnalyser implements Runnable {
 			
 			/* Why not just read to buffer.size() = endTime? */
 			if (settings.intStopTime > buffer.size()) { 
+				System.out.println(buffer.size() + " vs the settings stoptime:" + settings.intStopTime);
 				settings.intStopTime = buffer.size();
 //			engMatLab.engEvalString("endTime = " + settings.intStopTime); // always analyze to the end of the buffer?
 			}
@@ -241,9 +242,9 @@ public class RespirationAnalyser implements Runnable {
 			long endTime = analyseWindowStopTime - analyseWindowStartTime;
 			
 			 // clear history list
-			
-			System.out.println("====RESP ANALYSER: Complete analysis ms: " + endTime + "\n\t\tHistory size: " + history.size());
 			preserveHistory(buffer);
+			System.out.println("====RESP ANALYSER: Complete analysis ms: " + endTime + "\n\t\tHistory for next window: " + history.size());
+			
 
 			
 			offset += settings.clipLength - history.size(); // due to the history elements we need to move the offset for the detected events back by the history size
@@ -256,6 +257,7 @@ public class RespirationAnalyser implements Runnable {
 					+ "Window too small?\n\t"
 					+ "Long respiration halt?");
 		}
+		buffer = null;
 	}
 
 	/**
@@ -279,7 +281,7 @@ public class RespirationAnalyser implements Runnable {
 			}
 		}
 		
-		for (int bufferIndex = 0; index < (/*history.size() +*/ buffer.size()); index++) {
+		for (int bufferIndex = 0; index < (history.size() + buffer.size()); index++) {
 			try {
 				data1[0][index] = Double.parseDouble(buffer.get(bufferIndex));
 				concatenated.add(buffer.get(bufferIndex++));
@@ -287,7 +289,8 @@ public class RespirationAnalyser implements Runnable {
 				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
 			}
 		}
-//		System.out.println("Buffer to: " + index + " = TOTAL CLIP SIZE: " + history.size() + " + " + buffer.size());
+		
+		System.out.println("\tBuffer contains: " + index + "entries including " + history.size() + " from history");
 		settings.clipLength = index; // keep track of the entire signal length
 		
 		engMatLab.engPutArray("data1", data1); // load record
@@ -296,8 +299,6 @@ public class RespirationAnalyser implements Runnable {
 		return concatenated;
 	}
 	
-
-
 	/**
 	 * Load a local file to be used in the respiration analysis. This method assumes
 	 * the file is consistent with the raw data format described in the puka manual.
@@ -410,16 +411,14 @@ public class RespirationAnalyser implements Runnable {
 		double[][] P = engMatLab.engGetArray("P");
 		double[][] T = engMatLab.engGetArray("T");
 		
-		if (P != null && T != null) {
-			if (P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
-			if (T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
-		}
+		if (P[0] != null && P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
+		if (T[0] != null && T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
 		//System.out.println("===Preserve History--->\tTrough MAX at i: " + (T[0].length-1) + ": "+ troughMax + " P MAX at i: " + (P[0].length-1) + " : " + peakMax);
-		
+	
 		if ((int)peakMax > 0 || (int)troughMax > 0) {
 			double max = (peakMax > troughMax) ? peakMax : troughMax;
 			int topIndex = (int) max * 5; // why 5? The matlab scripts decimate the signal with a factor of 5!
-			List<String> preserve = buffer.subList(topIndex, settings.intStopTime);
+			List<String> preserve = buffer.subList(topIndex, buffer.size());
 			history.addAll(preserve);
 		} else {
 //			No information retrieved from the window, try again with more info.
