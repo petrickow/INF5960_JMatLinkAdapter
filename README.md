@@ -26,3 +26,6 @@ Useful links
 * [Puka](https://www.physionet.org/physiotools/puka/)
 
 
+License
+-----------
+GNU General Public License
