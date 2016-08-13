@@ -1,0 +1,1 @@
+fig:emptyAndSparseAnalysis <-- plot av tryning når signalet er tomt eller med bare en peak
