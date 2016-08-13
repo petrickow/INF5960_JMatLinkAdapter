@@ -222,7 +222,7 @@ public class RespirationAnalyser implements Runnable {
 		buffer = loadDataIntoMatlab(buffer); // we now know the size of the window, set start and end time
 
 		/* STEP 1 cont:  find onset Brute Force */
-		engMatLab.engEvalString("onsetTime = 1;");  // MATLAB uses 1 indexed arrays ///findOnset(y)
+		engMatLab.engEvalString("onsetTime = findOnset(y);");  // Detect the onset, but set start time in checkonset to 1
 	
 //		checks onset time and calculates endtime based on buffersize
 		if (checkOnset()) {
@@ -342,7 +342,9 @@ public class RespirationAnalyser implements Runnable {
 		}  
 		else {
 			System.out.println("===setOnset()-->: " + (int)dblTemp);
-			settings.intStartTime = (int)dblTemp;  //assign start time to public variable
+			settings.intStartTime = 1;
+			engMatLab.engEvalString("onsetTime = 1");
+					//(int)dblTemp;  // We still use 1 as start time, but if the onset is not found, we store the whole window in history
 
 //			TODO: add check to make sure we do not exceed the buffer.size
 			settings.intStopTime = settings.clipLength + settings.intStartTime;
@@ -408,11 +410,14 @@ public class RespirationAnalyser implements Runnable {
 		double peakMax = 0;
 		double troughMax = 0;
 		
+		/* TODO: 
+		 * engGetArray should return null, but at the moment returns empty matrixs 
+		 */
 		double[][] P = engMatLab.engGetArray("P");
 		double[][] T = engMatLab.engGetArray("T");
 		
-		if (P[0] != null && P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
-		if (T[0] != null && T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
+		if (P.length > 0 && P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
+		if (T.length > 0 && T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
 		//System.out.println("===Preserve History--->\tTrough MAX at i: " + (T[0].length-1) + ": "+ troughMax + " P MAX at i: " + (P[0].length-1) + " : " + peakMax);
 	
 		if ((int)peakMax > 0 || (int)troughMax > 0) {
