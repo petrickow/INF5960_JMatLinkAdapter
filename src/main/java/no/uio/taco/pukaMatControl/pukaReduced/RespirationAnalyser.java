@@ -183,6 +183,27 @@ public class RespirationAnalyser implements Runnable {
 		
 	}
 	
+	/**
+	 * Initiate respiration analysis. MATLAB session has to be running,
+	 */
+	private void analyseResp() {
+		/*
+		 * Step 2, peak detection, find peaks and trough 
+		 */
+		stepInfo("peak detection");
+		peakDetection();
+		/*
+		 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
+		 */
+		stepInfo("classify peaks");
+		classifyPeaks();
+		/*
+		 * Step 4,
+		 */
+		stepInfo("pause detection:\n\t"
+				+ "Uses matlab again to detect the start and end point of the pause around the peak");
+		pauseDetection();
+	}
 	
 
 
@@ -201,12 +222,14 @@ public class RespirationAnalyser implements Runnable {
 		buffer = loadDataIntoMatlab(buffer); // we now know the size of the window, set start and end time
 
 		/* STEP 1 cont:  find onset Brute Force */
-		engMatLab.engEvalString("onsetTime = 1");  // MATLAB uses 1 indexed arrays
+		engMatLab.engEvalString("onsetTime = findOnset(y);");  // Detect the onset, but set start time in checkonset to 1
 	
 //		checks onset time and calculates endtime based on buffersize
-		if (checkOnset()) { 
+		if (checkOnset()) {
+			
 			/* Why not just read to buffer.size() = endTime? */
 			if (settings.intStopTime > buffer.size()) { 
+				System.out.println(buffer.size() + " vs the settings stoptime:" + settings.intStopTime);
 				settings.intStopTime = buffer.size();
 //			engMatLab.engEvalString("endTime = " + settings.intStopTime); // always analyze to the end of the buffer?
 			}
@@ -219,14 +242,14 @@ public class RespirationAnalyser implements Runnable {
 			long endTime = analyseWindowStopTime - analyseWindowStartTime;
 			
 			 // clear history list
-			
-			System.out.println("====RESP ANALYSER: Complete analysis ms: " + endTime + "\n\t\tHistory size: " + history.size());
 			preserveHistory(buffer);
+			System.out.println("====RESP ANALYSER: Complete analysis ms: " + endTime + "\n\t\tHistory for next window: " + history.size());
+			
 
 			
 			offset += settings.clipLength - history.size(); // due to the history elements we need to move the offset for the detected events back by the history size
 
-			System.out.println("====History preserved: " + history.size());
+			//System.out.println("====History preserved: " + history.size());
 			
 		} else {
 			history.addAll(buffer);
@@ -234,6 +257,7 @@ public class RespirationAnalyser implements Runnable {
 					+ "Window too small?\n\t"
 					+ "Long respiration halt?");
 		}
+		buffer = null;
 	}
 
 	/**
@@ -242,8 +266,8 @@ public class RespirationAnalyser implements Runnable {
 	private List<String> loadDataIntoMatlab(List<String> buffer) {
 		stepInfo("load data, set start and end time");
 		
-		double[][] data1 = new double[1][history.size()+buffer.size()]; // convert to matlab friendly type
-		ArrayList<String> concatenated =  new ArrayList<String>(history.size()+buffer.size());
+		double[][] data1 = new double[1][history.size() + buffer.size()]; // convert to matlab friendly type
+		ArrayList<String> concatenated =  new ArrayList<String>(history.size() + buffer.size());
 
 		int index = 0;
 		
@@ -265,7 +289,8 @@ public class RespirationAnalyser implements Runnable {
 				System.out.println("Malformed entry in buffer (" + e.getMessage() + "):\n\t"+buffer.get(index));
 			}
 		}
-//		System.out.println("Buffer to: " + index + " = TOTAL CLIP SIZE: " + history.size() + " + " + buffer.size());
+		
+		System.out.println("\tBuffer contains: " + index + "entries including " + history.size() + " from history");
 		settings.clipLength = index; // keep track of the entire signal length
 		
 		engMatLab.engPutArray("data1", data1); // load record
@@ -274,8 +299,6 @@ public class RespirationAnalyser implements Runnable {
 		return concatenated;
 	}
 	
-
-
 	/**
 	 * Load a local file to be used in the respiration analysis. This method assumes
 	 * the file is consistent with the raw data format described in the puka manual.
@@ -290,28 +313,6 @@ public class RespirationAnalyser implements Runnable {
 //		log.debug("Change MATLAB folder to script path: " + settings.scriptPath);
 		engMatLab.engEvalString("cd ('" + settings.scriptPath + "');"); // settings path to scripts
 		engMatLab.engEvalString("onsetTime = findOnset(y);");  //run function, put result in intNew
-	}
-	
-	/**
-	 * Initiate respiration analysis. MATLAB session has to be running,
-	 */
-	private void analyseResp() {
-		/*
-		 * Step 2, peak detection, find peaks and trough 
-		 */
-		stepInfo("peak detection");
-		peakDetection();
-		/*
-		 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
-		 */
-		stepInfo("classify peaks");
-		classifyPeaks();
-		/*
-		 * Step 4,
-		 */
-		stepInfo("pause detection:\n\t"
-				+ "Uses matlab again to detect the start and end point of the pause around the peak");
-		pauseDetection();
 	}
 	
 	
@@ -341,7 +342,9 @@ public class RespirationAnalyser implements Runnable {
 		}  
 		else {
 			System.out.println("===setOnset()-->: " + (int)dblTemp);
-			settings.intStartTime = (int)dblTemp;  //assign start time to public variable
+			settings.intStartTime = 1;
+			engMatLab.engEvalString("onsetTime = 1");
+					//(int)dblTemp;  // We still use 1 as start time, but if the onset is not found, we store the whole window in history
 
 //			TODO: add check to make sure we do not exceed the buffer.size
 			settings.intStopTime = settings.clipLength + settings.intStartTime;
@@ -368,7 +371,7 @@ public class RespirationAnalyser implements Runnable {
 //		engMatLab.engEvalString("plot(y, 'm');");  //show the respiration signal so can check it
 		
 //		got the graph ready Do the Peak detection // TODO Swap .1 with param
-		engMatLab.engEvalString("[P,T,th,Qd] = newPT(y, .1, onsetTime, endTime)");
+		engMatLab.engEvalString("[P,T,th,Qd] = newPT(y, .1, onsetTime, endTime);");
 	}
 	
 	/**
@@ -407,18 +410,20 @@ public class RespirationAnalyser implements Runnable {
 		double peakMax = 0;
 		double troughMax = 0;
 		
+		/* TODO: 
+		 * engGetArray should return null, but at the moment returns empty matrixs 
+		 */
 		double[][] P = engMatLab.engGetArray("P");
 		double[][] T = engMatLab.engGetArray("T");
 		
-		if (P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
-		if (T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
-		
+		if (P.length > 0 && P[0].length > 0) { peakMax = P[0][P[0].length-1]; } // get the last detected value of both p&t
+		if (T.length > 0 && T[0].length > 0) { troughMax = T[0][T[0].length-1]; }
 		//System.out.println("===Preserve History--->\tTrough MAX at i: " + (T[0].length-1) + ": "+ troughMax + " P MAX at i: " + (P[0].length-1) + " : " + peakMax);
-		
+	
 		if ((int)peakMax > 0 || (int)troughMax > 0) {
 			double max = (peakMax > troughMax) ? peakMax : troughMax;
 			int topIndex = (int) max * 5; // why 5? The matlab scripts decimate the signal with a factor of 5!
-			List<String> preserve = buffer.subList(topIndex, settings.intStopTime);
+			List<String> preserve = buffer.subList(topIndex, buffer.size());
 			history.addAll(preserve);
 		} else {
 //			No information retrieved from the window, try again with more info.
@@ -521,6 +526,10 @@ public class RespirationAnalyser implements Runnable {
 	 */
 	public int getClipLength() {
 		return settings.clipLength;
+	}
+	
+	public void setClipLength(int clipLength) {
+		settings.clipLength = clipLength;
 	}
 	
 	/** 

@@ -37,7 +37,7 @@ public class StreamGobbler implements Runnable {
 	
 	private String fileName;
 	
-	private int windowSize = 10000;
+	private int windowSize = 5000;
 	private int port = 4444;
 	private String addr = "localhost";
 
@@ -290,6 +290,7 @@ public class StreamGobbler implements Runnable {
 	 */
 	public void setWindowSize(int windowSize) {
 		this.windowSize = windowSize; 
+		respirationAnalyser.setClipLength(windowSize);
 	}
 	
 	/**

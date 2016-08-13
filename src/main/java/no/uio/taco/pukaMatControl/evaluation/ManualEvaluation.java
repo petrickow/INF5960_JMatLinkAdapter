@@ -22,11 +22,11 @@ public class ManualEvaluation {
 		int[] reference = new int[0];
 		
 		try {
-			Path path = FileSystems.getDefault().getPath("matlabScripts", "data", "peaks.txt");
+			Path path = FileSystems.getDefault().getPath("data", "RESPEAK.txt");
 			List<String> peaksRes = new ArrayList<String>();
 			peaksRes = Files.readAllLines(path, StandardCharsets.UTF_8);
 			
-			path = FileSystems.getDefault().getPath("matlabScripts", "data", "troughs.txt");
+			path = FileSystems.getDefault().getPath("data", "RESTROUGH.txt");
 			List<String> troughsRes = new ArrayList<String>();
 			troughsRes = Files.readAllLines(path, StandardCharsets.UTF_8);
 
@@ -53,11 +53,11 @@ public class ManualEvaluation {
 		
 		// read references
 		try {
-			Path path = FileSystems.getDefault().getPath("matlabScripts", "data", "reduPeaks.txt");
+			Path path = FileSystems.getDefault().getPath("data", "empty.txt");
 			List<String> peaksRef = new ArrayList<String>();
 			peaksRef = Files.readAllLines(path, StandardCharsets.UTF_8);
 			
-			path = FileSystems.getDefault().getPath("matlabScripts", "data", "reduTroughs.txt");
+			path = FileSystems.getDefault().getPath("data", "empty.txt");
 			List<String> troughsRef = new ArrayList<String>();
 			troughsRef = Files.readAllLines(path, StandardCharsets.UTF_8);
 

@@ -95,6 +95,9 @@ public class JMatLinkAdapter implements IJMatLink {
 	/**
 	 * Retrieves a matlab-typed array and converts it to a two dimensional Java array.
 	 */
+	/*
+	 * TODO add empty-check and return null as per docs
+	 */
 	public double[][] engGetArray(String arrayS) {
 		try {
 			MatlabNumericArray array = converter.getNumericArray(arrayS); // get numberic array

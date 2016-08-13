@@ -90,12 +90,12 @@ public class Feeder implements Runnable {
 	 */
     class TimerPusher extends TimerTask {
         public void run()  {
-        	
+        	int LONGEVITY = 17000; /// Vry important. The number of samples to send before stopping: set to -1 for eternal loop
         	long startTime = System.nanoTime();
         	
         	try {
 				send();
-		    	if (currentLine >= 30000) { //
+		    	if (currentLine >= LONGEVITY) { //
 		    		timer.cancel();
 		    		timer.purge();
 		    		System.out.println("counter reached max, sending 400");
