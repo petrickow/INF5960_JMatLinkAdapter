@@ -113,49 +113,53 @@ public class RespirationAnalyser implements Runnable {
 	 */
 	public void launchLocalFile(String fname) throws MatlabInvocationException {
 		
-		// 1: Get data if specified 
+// 		1: Get data if specified 
 		if (fname.length() > 0) {
 			settings.fileName = System.getProperty("user.dir") + "\\" + fname; // no fault handeling
 		}
 
 		File textDataFile = new File(settings.fileName);
-		//log.debug("Signal file:\t" + settings.filename + "\n============\texists: " + textDataFile.exists()); 
-		
+//		log.debug("Signal file:\t" + settings.filename + "\n============\texists: " + textDataFile.exists()); 
 		
 		if (textDataFile.exists()) {
-			long start, end1, end2, end3, end4, end5 = 0;
+			long start, end1, end2, end3, end4, end5, end6 = 0;
+
 			startMatlab();
+			
 			step = 1;
-			/**
+			
+			/*
 			 * Step 1, load data, set start and end time
 			 */
-			
 //			stepInfo("load data, set start and end time");
 			
 			start = System.currentTimeMillis();
-			loadFile(textDataFile);
 			
+			loadFile(textDataFile);
 			/* TODO, should this be in here or in analyseResp()? AND
 			it should be modified to work automatically, that is if it does not
 			find onset time, we need to do some magic*/
 			checkOnset();
+
 			end1 = System.currentTimeMillis();
 			
+			engMatLab.engEvalString("y = smooth(y,'sgolay');");
 			
-			/**
+			end2 = System.currentTimeMillis();
+			/*
 			 * Step 2, peak detection, find peaks and trough 
 			 */
 //			stepInfo("peak detection");
 			peakDetection();
 			
-			end2 = System.currentTimeMillis();
+			end3 = System.currentTimeMillis();
 			/**
 			 * Step 3, classify peaks -> this is done manually in puka, we need to find a way to automate this process
 			 */
 //			stepInfo("classify peaks");
 			classifyPeaks();
 			
-			end3 = System.currentTimeMillis();
+			end4 = System.currentTimeMillis();
 			/**
 			 * Step 4,
 			 */
@@ -163,7 +167,7 @@ public class RespirationAnalyser implements Runnable {
 //					+ "Uses matlab again to detect the start and end point of the pause around the peak");
 			pauseDetection();
 			
-			end4 = System.currentTimeMillis();
+			end5 = System.currentTimeMillis();
 			
 			/**
 			 * Step 5, statistical calculation 
@@ -173,9 +177,9 @@ public class RespirationAnalyser implements Runnable {
 //					+ "to be modified in order to be used in a meaningful way for realtime analysis.\n\t"
 //					+ "Look into how to extract the events, CalculateResp:596");
 //			writeStatisticalInfo();
-			end5 = System.currentTimeMillis();
+			end6 = System.currentTimeMillis();
 			
-			printTiming(start, end1, end2, end3, end4, end5);
+			printTiming(start, end1, end2, end3, end4, end5, end6);
 			
 		} else {
 			System.out.println("File not found");
@@ -540,7 +544,7 @@ public class RespirationAnalyser implements Runnable {
 		this.currentWindow = buffer;
 	}
 
-	private void printTiming(long start, long end1, long end2, long end3, long end4, long end5) {
+	private void printTiming(long start, long end1, long end2, long end3, long end4, long end5, long end6) {
 		System.out.println("======== ANALYSIS TIMING =================="
 				+ "\n" + start 
 				+ "\n" + end1
@@ -549,13 +553,14 @@ public class RespirationAnalyser implements Runnable {
 				+ "\n" + end4
 				+ "\n" + end5);
 		
-		System.out.println("Step 1: " + (end1-start) + "ms");
-		System.out.println("Step 2: " + (end2-end1) + "ms");
-		System.out.println("Step 3: " + (end3-end2)+ "ms");
-		System.out.println("Step 4: " + (end4-end3) + "ms");
-		System.out.println("Step 5: " + (end5-end4) + "ms");
+		System.out.println("Step 1 data loading:\t" + (end1-start) + "ms");
+		System.out.println("Step 1.5, smoothing:\t" + (end2-end1) + "ms");
+		System.out.println("Step 2 peak detection:\t" + (end3-end2) + "ms");
+		System.out.println("Step 3 classify:\t" + (end4-end3)+ "ms");
+		System.out.println("Step 4 pause:\t" + (end5-end4) + "ms");
+		System.out.println("Step 5:stat calc:\t" + (end6-end5) + "ms");
 		
-		System.out.println("-----------------\nTotal time: " + (end5-start) + "ms");
+		System.out.println("-----------------\nTotal time:\t" + (end6-start) + "ms");
 		
 		//TODO: store each run
 	}
