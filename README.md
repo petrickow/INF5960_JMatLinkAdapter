@@ -4,7 +4,8 @@ puka modernization
 Maven project that wrapps calls to JMatlink (used by puka to make calls to MATLAB)
 with matlabcontrol-library in order to be able to run on/with 64-bit windows/MATLAB.
 
-This project has only translated the methods used by puka.
+This project has only translated the methods used by puka and is used as a part o
+my master thesis assignement.
 
 
 Prerequisites for vanilla puka:
